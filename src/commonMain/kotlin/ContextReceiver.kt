@@ -4,9 +4,9 @@ import kotlinx.serialization.Transient
 
 abstract class ContextReceiver {
     @Transient
-    protected lateinit var context: NodeContext
+    protected lateinit var myContext: NodeContext
 
     open fun setContext(context: NodeContext) {
-        this.context = context
+        myContext = context
     }
 }

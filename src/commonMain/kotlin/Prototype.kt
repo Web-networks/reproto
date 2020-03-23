@@ -23,7 +23,7 @@ class Prototype : ContextReceiver() {
 
     private fun createLayer(): Layer {
         val layer = Layer()
-        layer.setContext(context)
+        layer.setContext(myContext)
         return layer
     }
 

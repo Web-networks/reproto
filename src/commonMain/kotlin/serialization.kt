@@ -1,5 +1,7 @@
 package raid.neuroide.reproto
 
+import raid.neuroide.reproto.crdt.Operation
+
 object PrototypeSerializationManager {
     fun serialize(prototype: Prototype): String {
         return ""
@@ -16,6 +18,6 @@ object UpdateSerializationManager {
     }
 
     fun deserialize(data: String): Update {
-        return Update()
+        return Update(IdChain(), UpdatePayload(object : Operation {}))
     }
 }

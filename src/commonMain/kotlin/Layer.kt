@@ -19,7 +19,7 @@ class Layer : ContextReceiver() {
 
     private fun applyUpdate(paramName: String, operation: Operation) {
         parameters.getOrPut(paramName) {
-            LWWRegister("", LamportClock(context.site))
+            LWWRegister("", LamportClock(myContext.site))
         }.deliver(operation)
     }
 

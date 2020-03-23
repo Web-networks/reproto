@@ -13,10 +13,10 @@ interface Upstream {
 
 abstract class Crdt {
     @Transient
-    protected var upstream: Upstream? = null
+    protected var myUpstream: Upstream? = null
 
     fun setUpstream(upstream: Upstream) {
-        this.upstream = upstream
+        this.myUpstream = upstream
     }
 
     abstract fun deliver(op: Operation)

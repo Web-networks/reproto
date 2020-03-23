@@ -5,8 +5,10 @@ import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.PlainClock
 
 private val LeftId = Identifier(emptyArray(), -1)
-private val RightId = Identifier(emptyArray(), -1) // TODO: fix
+private val RightId = Identifier(arrayOf(Doublet(Int.MAX_VALUE, "")), -1) // TODO: fix
 
+
+// TODO: implement and use SortedSet
 class Sequence(private val site: String, private val strategy: AllocationStrategy) : Crdt() {
     private val clock = PlainClock()
     private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
@@ -68,7 +70,7 @@ class Sequence(private val site: String, private val strategy: AllocationStrateg
 
     private fun commitLocallyGenerated(op: SequenceOperation) {
         deliver(op)
-        upstream?.deliver(op)
+        myUpstream?.deliver(op)
     }
 
     private fun checkLimits(index: Int, allowEnd: Boolean = false) {

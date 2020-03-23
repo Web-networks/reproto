@@ -15,7 +15,7 @@ class LWWRegister(private var payload: String, private val clock: LamportClock) 
         }
 
     private fun sendUpstream() {
-        upstream?.deliver(LWWRegisterSet(payload, time))
+        myUpstream?.deliver(LWWRegisterSet(payload, time))
     }
 
     override fun deliver(op: Operation) {
