@@ -1,19 +1,15 @@
 package raid.neuroide.reproto
 
 import kotlinx.serialization.Serializable
+import raid.neuroide.reproto.crdt.seq.LogootStrategy
+import raid.neuroide.reproto.crdt.seq.Sequence
 
 @Serializable
-class Prototype : ContextReceiver() {
+class Prototype(private val context: NodeContext) {
     private val layers: MutableMap<String, Layer> = mutableMapOf()
+    private val layerSequence = Sequence(context.siteId, LogootStrategy)
 
-    override fun setContext(context: NodeContext) {
-        super.setContext(context)
-        for (layer in layers.values) {
-            layer.setContext(context)
-        }
-    }
-
-    fun processUpdate(update: Update) {
+    internal fun processUpdate(update: Update) {
         if (update.id.hasNext) {
             layers.getOrPut(update.id.shift(), ::createLayer).processUpdate(update)
         } else {
@@ -22,8 +18,7 @@ class Prototype : ContextReceiver() {
     }
 
     private fun createLayer(): Layer {
-        val layer = Layer()
-        layer.setContext(myContext)
+        val layer = Layer(context)
         return layer
     }
 

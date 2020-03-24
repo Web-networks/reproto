@@ -1,17 +1,25 @@
 package raid.neuroide.reproto.crdt.seq
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.Crdt
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.PlainClock
+import raid.neuroide.reproto.crdt.LocalSiteId
 
 private val LeftId = Identifier(emptyArray(), -1)
 private val RightId = Identifier(arrayOf(Doublet(Int.MAX_VALUE, "")), -1) // TODO: fix
 
 
 // TODO: implement and use SortedSet
-class Sequence(private val site: String, private val strategy: AllocationStrategy) : Crdt() {
-    private val clock = PlainClock()
+@Serializable
+class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : Crdt() {
     private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
+
+    @Transient
+    private val clock = PlainClock()
+
+    @Transient
     private var _sortedIdentifiers: List<Identifier>? = null
 
     private val sortedIdentifiers: List<Identifier>
@@ -80,7 +88,7 @@ class Sequence(private val site: String, private val strategy: AllocationStrateg
     }
 
     private fun allocateIdentifier(left: Identifier, right: Identifier): Identifier {
-        val position = strategy.allocatePosition(left.position, right.position, site)
+        val position = strategy.allocatePosition(left.position, right.position, siteId.id)
         return Identifier(position, clock.next())
     }
 

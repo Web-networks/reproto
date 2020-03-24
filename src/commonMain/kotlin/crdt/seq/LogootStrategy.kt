@@ -1,5 +1,6 @@
 package raid.neuroide.reproto.crdt.seq
 
+import kotlinx.serialization.Serializable
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -13,7 +14,8 @@ private fun Array<out Doublet>.indexAt(i: Int) =
     }
 
 
-class LogootStrategy : AllocationStrategy {
+@Serializable
+object LogootStrategy : AllocationStrategy {
     // Copypasted from https://github.com/PascalUrso/ReplicationBenchmark/blob/7cb464b8e07f7dc3931a9586d390cf1cdaaf4bfa/src/jbenchmarker/logoot/BoundaryStrategy.java#L53
     // with minor changes
     override fun allocatePosition(

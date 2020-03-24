@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 class LWWRegister(private var payload: String, private val clock: LamportClock) : Crdt() {
     private var time = clock.next()
 
+    constructor(payload: String, siteId: LocalSiteId) : this(payload, LamportClock(siteId))
+
     var value: String
         get() = payload
         set(newValue) {

@@ -6,10 +6,10 @@ import raid.neuroide.reproto.crdt.LamportClock
 import raid.neuroide.reproto.crdt.Operation
 
 @Serializable
-class Layer : ContextReceiver() {
+class Layer(private val context: NodeContext) {
     private val parameters: MutableMap<String, LWWRegister> = mutableMapOf()
 
-    fun processUpdate(update: Update) {
+    internal fun processUpdate(update: Update) {
         if (update.id.hasNext) {
             applyUpdate(update.id.shift(), update.payload.operation)
         } else {
@@ -19,7 +19,7 @@ class Layer : ContextReceiver() {
 
     private fun applyUpdate(paramName: String, operation: Operation) {
         parameters.getOrPut(paramName) {
-            LWWRegister("", LamportClock(myContext.site))
+            LWWRegister("", context.siteId)
         }.deliver(operation)
     }
 

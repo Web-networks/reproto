@@ -6,12 +6,12 @@ import raid.neuroide.reproto.crdt.seq.Sequence
 class CrdtTestBuilder(private val upstream: InternalBroadcast) {
     private var siteId = 0
 
-    fun lwwRegister(payload: String = "") = LWWRegister(payload, LamportClock(siteId++.toString()))
+    fun lwwRegister(payload: String = "") = LWWRegister(payload, LocalSiteId(siteId++.toString()))
         .apply {
             upstream.addCrdt(this)
         }
 
-    fun logoot() = Sequence(siteId++.toString(), LogootStrategy())
+    fun logoot() = Sequence(LocalSiteId(siteId++.toString()), LogootStrategy)
         .apply {
             upstream.addCrdt(this)
         }

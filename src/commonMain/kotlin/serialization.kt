@@ -1,23 +1,40 @@
+@file:OptIn(kotlinx.serialization.UnstableDefault::class)
+
 package raid.neuroide.reproto
 
-import raid.neuroide.reproto.crdt.Operation
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonConfiguration
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.plus
+import raid.neuroide.reproto.common.ContextualInjectorSerializer
+import raid.neuroide.reproto.crdt.getCrdtSerializers
 
-object PrototypeSerializationManager {
+private fun getSerialModuleForContext(context: NodeContext) =
+    getCrdtSerializers(context.siteId) +
+            SerializersModule {
+                contextual(NodeContext::class, ContextualInjectorSerializer(context))
+            }
+
+internal class PrototypeSerializationManager(private val context: NodeContext) {
+    private val module = getSerialModuleForContext(context)
+
     fun serialize(prototype: Prototype): String {
-        return ""
+        return Json(JsonConfiguration.Default, module).stringify(Prototype.serializer(), prototype)
     }
 
     fun deserialize(data: String): Prototype {
-        return Prototype()
+        return Json(JsonConfiguration.Default, module).parse(Prototype.serializer(), data)
     }
 }
 
-object UpdateSerializationManager {
+internal class UpdateSerializationManager(context: NodeContext) {
+    private val module = getSerialModuleForContext(context)
+
     fun serialize(update: Update): String {
-        return ""
+        return Json(JsonConfiguration.Default, module).stringify(Update.serializer(), update)
     }
 
     fun deserialize(data: String): Update {
-        return Update(IdChain(), UpdatePayload(object : Operation {}))
+        return Json(JsonConfiguration.Default, module).parse(Update.serializer(), data)
     }
 }
