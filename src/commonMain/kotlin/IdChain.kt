@@ -3,7 +3,7 @@ package raid.neuroide.reproto
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal class IdChain private constructor(private val chain: List<String>) {
+class IdChain constructor(val chain: List<String>) {
     private var index = 0
 
     constructor(vararg ids: String) : this(ids.toList())
@@ -12,4 +12,6 @@ internal class IdChain private constructor(private val chain: List<String>) {
 
     val hasNext
         get() = index < chain.size
+
+    operator fun plus(id: String) = IdChain(chain + listOf(id))
 }

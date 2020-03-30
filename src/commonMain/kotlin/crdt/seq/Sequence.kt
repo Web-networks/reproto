@@ -3,12 +3,12 @@ package raid.neuroide.reproto.crdt.seq
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.Crdt
+import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.PlainClock
-import raid.neuroide.reproto.crdt.LocalSiteId
 
-private val LeftId = Identifier(emptyArray(), -1)
-private val RightId = Identifier(arrayOf(Doublet(Int.MAX_VALUE, "")), -1) // TODO: fix
+private val LeftId = Identifier(emptyList(), -1)
+private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
 
 
 // TODO: implement and use SortedSet
@@ -30,11 +30,13 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
         }
 
     val content: List<String>
-        get() = sortedIdentifiers.mapNotNull {
-            if (it == LeftId || it == RightId)
-                null
-            else
-                elements[it]
+        get() {
+            return sortedIdentifiers.mapNotNull {
+                if (it == LeftId || it == RightId)
+                    null
+                else
+                    elements[it]
+            }
         }
 
     val size: Int

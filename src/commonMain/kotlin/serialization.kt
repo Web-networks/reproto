@@ -9,32 +9,37 @@ import kotlinx.serialization.modules.plus
 import raid.neuroide.reproto.common.ContextualInjectorSerializer
 import raid.neuroide.reproto.crdt.getCrdtSerializers
 
+
 private fun getSerialModuleForContext(context: NodeContext) =
     getCrdtSerializers(context.siteId) +
             SerializersModule {
-                contextual(NodeContext::class, ContextualInjectorSerializer(context))
+                contextual(NodeContextWrapper::class, ContextualInjectorSerializer(context.wrapped()))
             }
 
-internal class PrototypeSerializationManager(private val context: NodeContext) {
+internal class PrototypeSerializationManager(context: NodeContext) {
     private val module = getSerialModuleForContext(context)
 
     fun serialize(prototype: Prototype): String {
-        return Json(JsonConfiguration.Default, module).stringify(Prototype.serializer(), prototype)
+        return getJson().stringify(Prototype.serializer(), prototype)
     }
 
     fun deserialize(data: String): Prototype {
-        return Json(JsonConfiguration.Default, module).parse(Prototype.serializer(), data)
+        return getJson().parse(Prototype.serializer(), data)
     }
+
+    private fun getJson() = Json(JsonConfiguration.Stable.copy(classDiscriminator = "_type"), module)
 }
 
 internal class UpdateSerializationManager(context: NodeContext) {
     private val module = getSerialModuleForContext(context)
 
     fun serialize(update: Update): String {
-        return Json(JsonConfiguration.Default, module).stringify(Update.serializer(), update)
+        return getJson().stringify(Update.serializer(), update)
     }
 
     fun deserialize(data: String): Update {
-        return Json(JsonConfiguration.Default, module).parse(Update.serializer(), data)
+        return getJson().parse(Update.serializer(), data)
     }
+
+    private fun getJson() = Json(JsonConfiguration.Stable.copy(classDiscriminator = "_type"), module)
 }

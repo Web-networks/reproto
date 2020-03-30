@@ -2,8 +2,8 @@ package raid.neuroide.reproto.crdt.seq
 
 interface AllocationStrategy {
     fun allocatePosition(
-        left: Array<out Doublet>,
-        right: Array<out Doublet>,
+        left: List<Doublet>,
+        right: List<Doublet>,
         site: String
-    ): Array<out Doublet>
+    ): List<Doublet>
 }

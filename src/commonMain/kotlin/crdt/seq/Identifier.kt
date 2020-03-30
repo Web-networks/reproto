@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlin.math.max
 
 @Serializable
-data class Identifier(val position: Array<out Doublet>, val clock: Long) : Comparable<Identifier> {
+data class Identifier(val position: List<Doublet>, val clock: Long) : Comparable<Identifier> {
     override fun compareTo(other: Identifier): Int {
         val maxlen = max(position.size, other.position.size)
         for (i in 0 until maxlen) {

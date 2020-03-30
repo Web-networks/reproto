@@ -1,13 +1,29 @@
 package raid.neuroide.reproto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.LWWRegister
-import raid.neuroide.reproto.crdt.LamportClock
 import raid.neuroide.reproto.crdt.Operation
+import raid.neuroide.reproto.crdt.RegisterWrapper
 
 @Serializable
-class Layer(private val context: NodeContext) {
+class Layer constructor(private val context: NodeContextWrapper) {
     private val parameters: MutableMap<String, LWWRegister> = mutableMapOf()
+
+    @Transient
+    private var myUpstream: ChainedUpstream? = null
+
+    operator fun get(paramName: String): RegisterWrapper {
+        val rg = parameters.getOrPut(paramName, ::createRegister)
+        return RegisterWrapper(rg)
+    }
+
+    internal fun setUpstream(upstream: ChainedUpstream) {
+        myUpstream = upstream
+        for (param in parameters.values) {
+            param.setUpstream(upstream)
+        }
+    }
 
     internal fun processUpdate(update: Update) {
         if (update.id.hasNext) {
@@ -17,13 +33,18 @@ class Layer(private val context: NodeContext) {
         }
     }
 
+    private fun createRegister(): LWWRegister {
+        val rg = LWWRegister("", context.siteId)
+        myUpstream?.let { rg.setUpstream(it) }
+        return rg
+    }
+
     private fun applyUpdate(paramName: String, operation: Operation) {
-        parameters.getOrPut(paramName) {
-            LWWRegister("", context.siteId)
-        }.deliver(operation)
+        parameters.getOrPut(paramName, ::createRegister).deliver(operation)
     }
 
     private fun applyUpdate(update: UpdatePayload) {
         // TODO
+        // probably should never happen
     }
 }

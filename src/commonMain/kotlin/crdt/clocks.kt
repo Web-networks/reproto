@@ -73,7 +73,7 @@ class VectorClock(private val siteId: LocalSiteId) {
 
     fun update(timestamp: VectorTimestamp) {
         for ((site, time) in timestamp.times) {
-            times[siteId.id] = max(times[siteId.id] ?: 0, timestamp.times[site] ?: 0)
+            times[site] = max(times[site] ?: 0, time)
         }
     }
 }

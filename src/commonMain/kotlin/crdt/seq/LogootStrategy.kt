@@ -6,7 +6,7 @@ import kotlin.math.min
 import kotlin.random.Random
 
 
-private fun Array<out Doublet>.indexAt(i: Int) =
+private fun List<Doublet>.indexAt(i: Int) =
     if (i < size) {
         this[i].index
     } else {
@@ -19,10 +19,10 @@ object LogootStrategy : AllocationStrategy {
     // Copypasted from https://github.com/PascalUrso/ReplicationBenchmark/blob/7cb464b8e07f7dc3931a9586d390cf1cdaaf4bfa/src/jbenchmarker/logoot/BoundaryStrategy.java#L53
     // with minor changes
     override fun allocatePosition(
-        left: Array<out Doublet>,
-        right: Array<out Doublet>,
+        left: List<Doublet>,
+        right: List<Doublet>,
         site: String
-    ): Array<out Doublet> {
+    ): List<Doublet> {
         val commonLen: Int = min(left.size, right.size)
         var level = 0
         while (level < commonLen && left[level] == right[level]) {
@@ -55,12 +55,12 @@ object LogootStrategy : AllocationStrategy {
     // with minor changes
     // Attention: some suspicious code was rewritten
     private fun materialize(
-        left: Array<out Doublet>,
-        right: Array<out Doublet>,
+        left: List<Doublet>,
+        right: List<Doublet>,
         level: Int,
         offset: Int,
         site: String
-    ): Array<out Doublet> {
+    ): List<Doublet> {
         val digits = (
                 left.map { it.index } +
                         generateSequence { 0 }.take(max(0, level - left.size + 1))
@@ -96,6 +96,6 @@ object LogootStrategy : AllocationStrategy {
             i++
         }
 
-        return result.toTypedArray()
+        return result
     }
 }
