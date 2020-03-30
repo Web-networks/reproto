@@ -20,7 +20,7 @@ class Prototype constructor(private val context: NodeContextWrapper) {
 
     fun addLayer(position: Int): Layer {
         val layerId = context.issueId()
-        val layer = Layer(context)
+        val layer = createLayer(layerId)
 
         layerSequence.insert(position, layerId)
         layersMap[layerId] = layer

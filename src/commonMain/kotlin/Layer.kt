@@ -14,7 +14,7 @@ class Layer constructor(private val context: NodeContextWrapper) {
     private var myUpstream: ChainedUpstream? = null
 
     operator fun get(paramName: String): RegisterWrapper {
-        val rg = parameters.getOrPut(paramName, ::createRegister)
+        val rg = parameters.getOrPut(paramName) { createRegister(paramName) }
         return RegisterWrapper(rg)
     }
 
@@ -33,18 +33,18 @@ class Layer constructor(private val context: NodeContextWrapper) {
         }
     }
 
-    private fun createRegister(): LWWRegister {
+    private fun createRegister(paramName: String): LWWRegister {
         val rg = LWWRegister("", context.siteId)
-        myUpstream?.let { rg.setUpstream(it) }
+        myUpstream?.let { rg.setUpstream(it.child(paramName)) }
         return rg
     }
 
     private fun applyUpdate(paramName: String, operation: Operation) {
-        parameters.getOrPut(paramName, ::createRegister).deliver(operation)
+        parameters.getOrPut(paramName) { createRegister(paramName) }.deliver(operation)
     }
 
     private fun applyUpdate(update: UpdatePayload) {
-        // TODO
-        // probably should never happen
+        // TODO: maybe don't throw?
+        throw UnsupportedOperationException()
     }
 }

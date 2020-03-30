@@ -13,7 +13,7 @@ internal abstract class ChainedUpstream : Upstream {
 
     fun child(additionalId: String): ChainedUpstream = object : ChainedUpstream() {
         override fun process(id: IdChain, op: Operation) {
-            this@ChainedUpstream.process(IdChain(id.chain + listOf(additionalId)), op)
+            this@ChainedUpstream.process(IdChain(listOf(additionalId) + id.chain), op)
         }
     }
 }

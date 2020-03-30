@@ -42,6 +42,25 @@ class NodeTest {
         assertEquals(0, p2.layers.size)
     }
 
+    @Test
+    fun parameters() {
+        val p1: Prototype? = node().getPrototypeSync("proto")
+        val p2: Prototype? = node().getPrototypeSync("proto")
+        assertNotNull(p1)
+        assertNotNull(p2)
+
+        val l1 = p1.addLayer(0)
+        val l2 = p2.layers[0]
+
+        l1["test"].intValue = 10
+        assertEquals(10, l1["test"].intValue)
+        assertEquals(10, l2["test"].intValue)
+
+        l2["test"].intValue = 13
+        assertEquals(13, l1["test"].intValue)
+        assertEquals(13, l2["test"].intValue)
+    }
+
     private fun node() =
         ClientNode(server.context.issueId()).apply {
             setGateway(server)
