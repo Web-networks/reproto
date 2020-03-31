@@ -1,10 +1,9 @@
 package raid.neuroide.reproto
 
-import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.Operation
 
 class ClientNode(site: String) {
-    private val context = Context(site)
+    private val context = DefaultContext(site)
     private val processor = Processor()
     private val upstream = Upstream()
     private val uSerializer = UpdateSerializationManager(context)
@@ -47,13 +46,13 @@ class ClientNode(site: String) {
         currentPrototype?.processUpdate(update)
     }
 
-    private fun receivePrototype(id: String, proto: Prototype) {
+    private fun receivePrototype(id: String, proto: Prototype?) {
         if (id != requestedPrototypeId)
             return
 
         currentPrototype = proto
         currentPrototypeId = requestedPrototypeId
-        proto.setUpstream(upstream.child(id))
+        proto?.setUpstream(upstream.child(id))
         requestedPrototypeId = null
 
         for (callback in pendingPrototypeCallbacks) {
@@ -69,21 +68,9 @@ class ClientNode(site: String) {
             processUpdate(upd)
         }
 
-        override fun receivePrototype(id: String, proto: String) {
-            val prototype = pSerializer.deserialize(proto)
+        override fun receivePrototype(id: String, proto: String?) {
+            val prototype = proto?.let { pSerializer.deserialize(it) }
             receivePrototype(id, prototype)
-        }
-    }
-
-    private inner class Context private constructor(override val siteId: LocalSiteId) :
-        NodeContext {
-        private var idCounter: Int = 0
-
-        constructor(site: String) : this(LocalSiteId(site))
-
-        override fun issueId(): String {
-            idCounter++
-            return "${siteId.id}::${idCounter}"
         }
     }
 

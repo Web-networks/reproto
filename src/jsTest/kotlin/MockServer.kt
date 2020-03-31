@@ -1,9 +1,7 @@
 package raid.neuroide.reproto
 
-import raid.neuroide.reproto.crdt.LocalSiteId
-
 class MockServer : ClientGateway {
-    val context = Context().wrapped()
+    val context = DefaultContext("").wrapped()
     private val receivers: MutableList<PrototypeReceiver> = mutableListOf()
     private val processors: MutableList<UpdateProcessor> = mutableListOf()
     private val prototypes: MutableMap<String, String> = mutableMapOf()
@@ -38,16 +36,5 @@ class MockServer : ClientGateway {
 
     override fun requestSync(vectorTimestamp: String) {
         throw NotImplementedError()
-    }
-
-    private inner class Context : NodeContext {
-        private var idCounter = 0
-
-        override val siteId = LocalSiteId("")
-
-        override fun issueId(): String {
-            idCounter++
-            return "$idCounter"
-        }
     }
 }
