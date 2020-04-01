@@ -16,7 +16,7 @@ class IntegrationTest {
         assertNotNull(c.getPrototypeSync(id))
     }
 
-    @Test
+//    @Test
     fun modelStore() = integrationTest {
         val id = service.createPrototype()
         val p1 = client().getPrototypeSync(id)
