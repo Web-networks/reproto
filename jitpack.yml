@@ -1,0 +1,6 @@
+jdk:
+  - oraclejdk8
+before_install:
+  - chmod a+x gradlew
+install:
+  - ./gradlew clean -Pgroup=com.github.Web-networks -Pversion=698334ed17 build  -xallTests -xjsTest -xjsBrowserTest -xjvmTest publishToMavenLocal
