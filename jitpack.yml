@@ -1,2 +1,4 @@
 jdk:
   - oraclejdk8
+install:
+  - ./gradlew clean -Pgroup=com.github.Web-networks -Pversion=698334ed17 build -xtest publishToMavenLocal
