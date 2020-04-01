@@ -1,6 +1,7 @@
 package raid.neuroide.reproto
 
 import raid.neuroide.reproto.crdt.Operation
+import kotlin.js.JsName
 
 class ClientNode(site: String) {
     private val context = DefaultContext(site)
@@ -16,6 +17,7 @@ class ClientNode(site: String) {
     private var requestedPrototypeId: String? = null
     private val pendingPrototypeCallbacks: MutableList<(Prototype?) -> Unit> = mutableListOf()
 
+    @JsName("getPrototype")
     fun getPrototype(id: String, callback: (Prototype?) -> Unit) {
         if (currentPrototypeId == id) {
             callback(currentPrototype)
@@ -31,6 +33,7 @@ class ClientNode(site: String) {
         }
     }
 
+    @JsName("setGateway")
     fun setGateway(g: ClientGateway) {
         g.subscribe(processor)
         g.setReceiver(processor)

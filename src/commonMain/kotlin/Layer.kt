@@ -5,6 +5,7 @@ import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.LWWRegister
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.RegisterWrapper
+import kotlin.js.JsName
 
 @Serializable
 class Layer constructor(private val context: NodeContextWrapper) {
@@ -13,6 +14,7 @@ class Layer constructor(private val context: NodeContextWrapper) {
     @Transient
     private var myUpstream: ChainedUpstream? = null
 
+    @JsName("get")
     operator fun get(paramName: String): RegisterWrapper {
         val rg = parameters.getOrPut(paramName) { createRegister(paramName) }
         return RegisterWrapper(rg)

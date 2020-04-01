@@ -6,7 +6,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.StructureKind
 
-class ContextualInjectorSerializer<T>(private val localValue: T) : KSerializer<T> {
+internal class ContextualInjectorSerializer<T>(private val localValue: T) : KSerializer<T> {
     override val descriptor = SerialDescriptor("ValueInjection", StructureKind.OBJECT)
 
     override fun deserialize(decoder: Decoder): T {

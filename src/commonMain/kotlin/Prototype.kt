@@ -4,20 +4,26 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
 import raid.neuroide.reproto.crdt.seq.Sequence
+import kotlin.js.JsName
 
 @Serializable
 class Prototype constructor(private val context: NodeContextWrapper) {
     private val layersMap: MutableMap<String, Layer> = mutableMapOf()
 
+    @Transient
+    private var myUpstream: ChainedUpstream? = null
+
     // this safe call is necessary to overcome a bug in kotlinx.serialization
     @Suppress("UNNECESSARY_SAFE_CALL")
     private val layerSequence = Sequence(this?.context?.siteId, LogootStrategy)
 
+    @JsName("layers")
     val layers: List<Layer>
         get() = layerSequence.content.map { id ->
             layersMap.getOrPut(id) { createLayer(id) }
         }
 
+    @JsName("addLayer")
     fun addLayer(position: Int): Layer {
         val layerId = context.issueId()
         val layer = createLayer(layerId)
@@ -27,17 +33,16 @@ class Prototype constructor(private val context: NodeContextWrapper) {
         return layer
     }
 
+    @JsName("moveLayer")
     fun moveLayer(from: Int, to: Int) {
         layerSequence.move(from, to)
     }
 
+    @JsName("removeLayer")
     fun removeLayer(position: Int) {
         layerSequence.delete(position)
         // TODO: delete from map (on all nodes!)
     }
-
-    @Transient
-    private var myUpstream: ChainedUpstream? = null
 
     internal fun setUpstream(upstream: ChainedUpstream) {
         myUpstream = upstream
