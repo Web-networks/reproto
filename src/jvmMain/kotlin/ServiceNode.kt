@@ -71,15 +71,15 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
         }
         // TODO: work with ReplicatedLog?
         for (g in cGateways) {
-            if (g == sourceGateway)
-                continue
+//            if (g == sourceGateway)
+//                continue
             g.publishUpdate(serialized)
         }
     }
 
     private suspend fun storePrototype(id: String, prototype: Prototype, exceptGateway: Gateway) {
         val serialized = pSerializer.serialize(prototype)
-        sGateways.filter { it != exceptGateway }.forEach {
+        sGateways/* .filter { it != exceptGateway } */.forEach {
             it.store(id, serialized)
         }
     }

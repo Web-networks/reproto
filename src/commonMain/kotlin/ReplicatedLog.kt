@@ -17,8 +17,15 @@ class ReplicatedLog(@Suppress("CanBeParameter") private val context: NodeContext
     @Transient
     private val site = this?.context?.siteId?.id
 
+    @Transient
+    private var myUpstream: LogUpstream? = null
+
     val currentTimestamp: VectorTimestamp
         get() = clock.value
+
+    fun setUpstream(upstream: LogUpstream) {
+        myUpstream = upstream
+    }
 
     fun issueLocalUpdate(id: IdChain, payload: UpdatePayload): Update {
         return Update(id, issueLocalTimestamp(), payload)
@@ -35,7 +42,7 @@ class ReplicatedLog(@Suppress("CanBeParameter") private val context: NodeContext
      * @return true if the message can be accepted
      * @throws IllegalStateException if some messages were definitely lost. Don't rely on this check.
      */
-    fun tryDeliver(update: Update): Boolean {
+    fun tryCommit(update: Update): Boolean {
         val (longIndex, origin) = update.index
         val index = longIndex.toInt()
         val currentIndex = clock.value[origin]
@@ -48,7 +55,12 @@ class ReplicatedLog(@Suppress("CanBeParameter") private val context: NodeContext
         }
 
         clock.update(VectorTimestamp(mapOf(origin to index)))
+        myUpstream?.save(update)
         return true
+    }
+
+    fun getUpdates(sinceRevision: VectorTimestamp, maxCount: Int = Int.MAX_VALUE): List<Update>? {
+        return myUpstream?.restore(sinceRevision, maxCount)
     }
 
     private fun issueLocalTimestamp(): LamportTimestamp {

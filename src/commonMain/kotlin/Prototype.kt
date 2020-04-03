@@ -54,7 +54,7 @@ class Prototype constructor(private val context: NodeContextWrapper) {
     }
 
     internal fun processUpdate(update: Update) {
-        if (!log.tryDeliver(update))
+        if (!log.tryCommit(update))
             return
 
         if (update.id.hasNext) {

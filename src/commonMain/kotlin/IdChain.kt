@@ -1,9 +1,11 @@
 package raid.neuroide.reproto
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 class IdChain constructor(val chain: List<String>) {
+    @Transient
     private var index = 0
 
     constructor(vararg ids: String) : this(ids.toList())

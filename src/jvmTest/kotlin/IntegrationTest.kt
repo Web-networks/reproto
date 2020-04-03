@@ -16,7 +16,7 @@ class IntegrationTest {
         assertNotNull(c.getPrototypeSync(id))
     }
 
-//    @Test
+    @Test
     fun modelStore() = integrationTest {
         val id = service.createPrototype()
         val p1 = client().getPrototypeSync(id)
@@ -25,7 +25,6 @@ class IntegrationTest {
         assertNotNull(p2)
 
         repeat(100) { service.createPrototype() }
-
 
         p1.addLayer(0)
         // TODO: wait for io completion

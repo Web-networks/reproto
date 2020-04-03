@@ -9,8 +9,6 @@ interface ClientGateway {
     fun setReceiver(receiver: (String, String?) -> Unit)
     @JsName("subscribe")
     fun subscribe(processor: (String) -> Unit)
-    @JsName("requestSync")
-    fun requestSync(vectorTimestamp: String)
     @JsName("publishUpdate")
     fun publishUpdate(update: String)
 }

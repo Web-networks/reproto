@@ -44,10 +44,6 @@ class Bridge(private val service: ServiceNode) {
             clientProcessors.add(processor)
         }
 
-        override fun requestSync(vectorTimestamp: String) {
-            throw NotImplementedError()
-        }
-
         override fun publishUpdate(update: String) = runBlocking {
             serviceGateway.processors.forEach {
                 it.process(update)
