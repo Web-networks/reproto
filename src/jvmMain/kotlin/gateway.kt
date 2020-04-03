@@ -17,6 +17,13 @@ interface ChangesGateway : Gateway {
     suspend fun publishUpdate(update: String)
 }
 
+interface LogStorageGateway {
+    data class Entry(val site: String, val originIndex: Int, val payload: String)
+
+    fun save(prototypeId: String, entry: Entry)
+    fun restore(prototypeId: String, sinceRevision: Map<String, Int>, maxCount: Int): List<Entry>
+}
+
 interface UpdateProcessor {
     suspend fun process(update: String)
 }

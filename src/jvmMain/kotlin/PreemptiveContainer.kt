@@ -18,7 +18,7 @@ class PreemptiveContainer<K, V>(
     private val container: ConcurrentMap<K, Holder> = ConcurrentHashMap()
     private val thiningMutex = Mutex()
 
-    suspend fun use(key: K, consumer: suspend (V?) -> Unit) {
+    suspend fun <R> use(key: K, consumer: suspend (V?) -> R): R {
         val holder = container.compute(key) { _, v ->
             if (v == null || !v.acquire()) {
                 Holder(key).apply { acquire() }
@@ -27,8 +27,12 @@ class PreemptiveContainer<K, V>(
 
         val valueIsNull: Boolean
         val free: Boolean
+        var result: R
         try {
-            valueIsNull = !holder.use(consumer)
+            holder.use(consumer).run {
+                valueIsNull = !first
+                result = second
+            }
         } finally {
             free = holder.release()
         }
@@ -36,10 +40,11 @@ class PreemptiveContainer<K, V>(
         if (preemptNulls && valueIsNull && free) {
             holder.tryPreempt()
         }
-
         if (container.size >= thresholdCapacity) {
             thin()
         }
+
+        return result
     }
 
     fun putIfAbsent(key: K, value: V) {
@@ -101,16 +106,15 @@ class PreemptiveContainer<K, V>(
         /**
          * @return true if value is not null
          */
-        suspend fun use(consumer: suspend (V?) -> Unit): Boolean {
-            return mutex.withLock {
+        suspend inline fun <R> use(crossinline consumer: suspend (V?) -> R): Pair<Boolean, R> =
+            mutex.withLock {
                 if (!valueComputed) {
                     value = computeValue()
                     valueComputed = true
                 }
-                consumer(value)
-                value != null
+                val res = consumer(value)
+                Pair(value != null, res)
             }
-        }
 
         private suspend fun computeValue(): V? = provider(key)
 

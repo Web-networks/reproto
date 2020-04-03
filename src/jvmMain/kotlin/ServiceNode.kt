@@ -1,14 +1,17 @@
 package raid.neuroide.reproto
 
+import raid.neuroide.reproto.crdt.VectorTimestamp
+
 class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
     private val context = DefaultContext(site)
-//    private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val uSerializer = UpdateSerializationManager(context)
     private val pSerializer = PrototypeSerializationManager(context)
 
     private val cGateways: MutableList<ChangesGateway> = mutableListOf()
     private val lGateways: MutableList<LoadGateway> = mutableListOf()
     private val sGateways: MutableList<StoreGateway> = mutableListOf()
+    private var logStorage: LogStorage? = null
+
     private val prototypes = PreemptiveContainer(inMemoryThreshold, true, ::requestPrototype)
 
     fun addGateway(g: Gateway) {
@@ -22,6 +25,13 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
             g.subscribe(Processor(g))
             cGateways.add(g)
         }
+        if (g is LogStorageGateway) {
+            logStorage = createLogStorage(g)
+        }
+    }
+
+    private fun createLogStorage(g: LogStorageGateway): LogStorage? {
+        return LogStorage(g, 5000, uSerializer)
     }
 
     suspend fun createPrototype(): String {
@@ -36,13 +46,20 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
     }
 
     override suspend fun load(id: String): String? {
-        var res: String? = null
-        prototypes.use(id) {
-            res = it?.let {
+        return prototypes.use(id) {
+            it?.let {
                 pSerializer.serialize(it)
             }
         }
-        return res
+    }
+
+    suspend fun getUpdates(id: String, sinceRevision: VectorTimestamp, maxCount: Int): List<String>? {
+        // possible optimizations: don't actually fetch the model
+        return prototypes.use(id) {
+            it?.log?.getUpdates(sinceRevision, maxCount)
+        }?.map {
+            uSerializer.serialize(it)
+        }
     }
 
     private suspend fun requestPrototype(id: String): Prototype? {
@@ -81,6 +98,16 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
         val serialized = pSerializer.serialize(prototype)
         sGateways/* .filter { it != exceptGateway } */.forEach {
             it.store(id, serialized)
+        }
+    }
+
+    private inner class LogStorageUpstream(private val prototypeId: String) : LogUpstream {
+        override fun save(update: Update) {
+            logStorage?.save(prototypeId, update)
+        }
+
+        override fun restore(sinceRevision: VectorTimestamp, maxCount: Int): List<Update>? {
+            return logStorage?.restore(prototypeId, sinceRevision, maxCount)
         }
     }
 

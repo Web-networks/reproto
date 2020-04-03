@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-class IdChain constructor(val chain: List<String>) {
+internal class IdChain constructor(val chain: List<String>) {
     @Transient
     private var index = 0
 
