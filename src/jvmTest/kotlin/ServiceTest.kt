@@ -8,11 +8,11 @@ import kotlin.test.assertNull
 
 class ServiceTest {
     @Test
-    fun basic() {
+    fun basic()  {
         val s = service()
         assertNull(runBlocking { s.load("model") })
 
-        val id = s.createPrototype()
+        val id = runBlocking { s.createPrototype() }
         assertNotNull(runBlocking { s.load(id) })
     }
 
@@ -20,8 +20,8 @@ class ServiceTest {
     fun preempt() {
         val s = service(3)
 
-        val id = s.createPrototype()
-        repeat(5) { s.createPrototype() }
+        val id = runBlocking { s.createPrototype() }
+        runBlocking { repeat(5) { s.createPrototype() } }
 
         assertNotNull(runBlocking { s.load(id) })
     }

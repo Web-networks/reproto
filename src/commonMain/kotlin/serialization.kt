@@ -1,5 +1,3 @@
-@file:OptIn(kotlinx.serialization.UnstableDefault::class)
-
 package raid.neuroide.reproto
 
 import kotlinx.serialization.json.Json

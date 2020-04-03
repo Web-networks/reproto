@@ -63,7 +63,8 @@ data class VectorTimestamp(val times: Map<String, Int>) : Comparable<VectorTimes
 
 @Serializable
 class VectorClock(private val siteId: LocalSiteId) {
-    private val times: MutableMap<String, Int> = mutableMapOf(siteId.id to 0)
+    @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS") // to bypass the bug in kotlinx.serialization
+    private val times: MutableMap<String, Int> = mutableMapOf((this?.siteId?.id ?: "") to 0)
 
     val value
         get() = VectorTimestamp(times)

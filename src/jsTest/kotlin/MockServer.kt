@@ -1,5 +1,8 @@
 package raid.neuroide.reproto
 
+private typealias PrototypeReceiver = (String, String?) -> Unit
+private typealias UpdateProcessor = (String) -> Unit
+
 class MockServer : ClientGateway {
     val context = DefaultContext("").wrapped()
     private val receivers: MutableList<PrototypeReceiver> = mutableListOf()
@@ -19,13 +22,13 @@ class MockServer : ClientGateway {
     override fun loadAndSubscribe(id: String) {
         val proto = getPrototype(id)
         for (receiver in receivers) {
-            receiver.receivePrototype(id, proto)
+            receiver(id, proto)
         }
     }
 
     override fun publishUpdate(update: String) {
         for (subscriber in processors) {
-            subscriber.process(update)
+            subscriber(update)
         }
     }
 

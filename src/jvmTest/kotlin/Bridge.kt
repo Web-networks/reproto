@@ -2,8 +2,10 @@ package raid.neuroide.reproto
 
 import kotlinx.coroutines.runBlocking
 
+private typealias PrototypeReceiver = (String, String?) -> Unit
+
 class Bridge(private val service: ServiceNode) {
-    private val clientProcessors: MutableList<UpdateProcessor> = mutableListOf()
+    private val clientProcessors: MutableList<(String) -> Unit> = mutableListOf()
     private val serviceGateway = ServiceGateway()
 
     init {
@@ -19,13 +21,9 @@ class Bridge(private val service: ServiceNode) {
             processors.add(processor)
         }
 
-        override fun requestSync(vectorTimestamp: String) {
-            throw NotImplementedError()
-        }
-
-        override fun publishUpdate(update: String) {
+        override suspend fun publishUpdate(update: String) {
             clientProcessors.forEach {
-                it.process(update)
+                it(update)
             }
         }
     }
@@ -35,14 +33,14 @@ class Bridge(private val service: ServiceNode) {
 
         override fun loadAndSubscribe(id: String) {
             val proto = runBlocking { service.load(id) }
-            myReceiver?.receivePrototype(id, proto)
+            myReceiver?.invoke(id, proto)
         }
 
         override fun setReceiver(receiver: PrototypeReceiver) {
             myReceiver = receiver
         }
 
-        override fun subscribe(processor: UpdateProcessor) {
+        override fun subscribe(processor: (String) -> Unit) {
             clientProcessors.add(processor)
         }
 
@@ -50,12 +48,10 @@ class Bridge(private val service: ServiceNode) {
             throw NotImplementedError()
         }
 
-        override fun publishUpdate(update: String) {
+        override fun publishUpdate(update: String) = runBlocking {
             serviceGateway.processors.forEach {
                 it.process(update)
             }
         }
     }
-
-
 }

@@ -5,7 +5,6 @@ import kotlin.js.JsName
 
 class ClientNode(site: String) {
     private val context = DefaultContext(site)
-    private val processor = Processor()
     private val upstream = Upstream()
     private val uSerializer = UpdateSerializationManager(context)
     private val pSerializer = PrototypeSerializationManager(context)
@@ -35,8 +34,14 @@ class ClientNode(site: String) {
 
     @JsName("setGateway")
     fun setGateway(g: ClientGateway) {
-        g.subscribe(processor)
-        g.setReceiver(processor)
+        g.subscribe { update ->
+            val upd = uSerializer.deserialize(update)
+            processUpdate(upd)
+        }
+        g.setReceiver { id, proto ->
+            val prototype = proto?.let { pSerializer.deserialize(it) }
+            receivePrototype(id, prototype)
+        }
         gateway = g
     }
 
@@ -64,22 +69,9 @@ class ClientNode(site: String) {
         pendingPrototypeCallbacks.clear()
     }
 
-    private inner class Processor : UpdateProcessor,
-        PrototypeReceiver {
-        override fun process(update: String) {
-            val upd = uSerializer.deserialize(update)
-            processUpdate(upd)
-        }
-
-        override fun receivePrototype(id: String, proto: String?) {
-            val prototype = proto?.let { pSerializer.deserialize(it) }
-            receivePrototype(id, prototype)
-        }
-    }
-
     private inner class Upstream : ChainedUpstream() {
         override fun process(id: IdChain, op: Operation) {
-            val update = Update(id, UpdatePayload(op))
+            val update = (currentPrototype ?: return).log.issueLocalUpdate(id, UpdatePayload(op))
             val serialized = uSerializer.serialize(update)
             gateway.publishUpdate(serialized)
         }

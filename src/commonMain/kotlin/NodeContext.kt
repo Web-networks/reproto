@@ -9,7 +9,6 @@ interface NodeContext {
     fun issueId(): String
 }
 
-@OptIn(kotlinx.serialization.ImplicitReflectionSerializer::class) // TODO: use module-wide opt-in
 @Serializable(with = ContextSerializer::class)
 class NodeContextWrapper(impl: NodeContext) : NodeContext by impl
 

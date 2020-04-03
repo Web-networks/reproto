@@ -2,10 +2,8 @@ package raid.neuroide.reproto.crdt.seq
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import raid.neuroide.reproto.crdt.Crdt
 import raid.neuroide.reproto.crdt.LocalSiteId
-import raid.neuroide.reproto.crdt.Observable
-import raid.neuroide.reproto.crdt.ObservableData
+import raid.neuroide.reproto.crdt.ObservableCrdt
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.PlainClock
 
@@ -15,8 +13,7 @@ private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
 
 // TODO: implement and use SortedSet
 @Serializable
-class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) :
-    Crdt(), Observable<Change> by ObservableData() {
+class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : ObservableCrdt<Change>() {
     private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
 
     @Transient

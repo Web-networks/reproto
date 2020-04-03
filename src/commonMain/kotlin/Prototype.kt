@@ -9,6 +9,7 @@ import kotlin.js.JsName
 @Serializable
 class Prototype constructor(private val context: NodeContextWrapper) {
     private val layersMap: MutableMap<String, Layer> = mutableMapOf()
+    internal val log = ReplicatedLog(context)
 
     @Transient
     private var myUpstream: ChainedUpstream? = null
@@ -53,6 +54,9 @@ class Prototype constructor(private val context: NodeContextWrapper) {
     }
 
     internal fun processUpdate(update: Update) {
+        if (!log.tryDeliver(update))
+            return
+
         if (update.id.hasNext) {
             val layerId = update.id.shift()
             layersMap.getOrPut(layerId) {

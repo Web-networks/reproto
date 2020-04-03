@@ -3,7 +3,6 @@ package raid.neuroide.reproto.crdt
 import kotlinx.serialization.ContextSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import kotlinx.serialization.modules.SerialModule
 import kotlinx.serialization.modules.SerializersModule
 import raid.neuroide.reproto.common.ContextualInjectorSerializer
@@ -22,7 +21,6 @@ interface Upstream {
 }
 
 abstract class Crdt {
-    @Transient
     protected var myUpstream: Upstream? = null
 
     fun setUpstream(upstream: Upstream) {

@@ -1,5 +1,7 @@
 package raid.neuroide.reproto
 
+import kotlinx.coroutines.runBlocking
+
 
 class TestBuilder {
     private val fakeCtx = DefaultContext("...")
@@ -17,6 +19,6 @@ class TestBuilder {
         }
 }
 
-inline fun integrationTest(test: TestBuilder.() -> Unit) {
+inline fun integrationTest(crossinline test: suspend TestBuilder.() -> Unit) = runBlocking {
     TestBuilder().test()
 }
