@@ -3,7 +3,9 @@ package raid.neuroide.reproto.crdt
 import kotlinx.serialization.Serializable
 
 @Serializable
-class LWWRegister(private var payload: String, private val clock: LamportClock) : Crdt() {
+class LWWRegister(private var payload: String, private val clock: LamportClock) :
+    Crdt(), Observable<Unit> by ObservableData() {
+
     private var time = clock.next()
 
     constructor(payload: String, siteId: LocalSiteId) : this(payload, LamportClock(siteId))
@@ -13,6 +15,7 @@ class LWWRegister(private var payload: String, private val clock: LamportClock) 
         set(newValue) {
             time = clock.next()
             payload = newValue
+            fire(Unit)
             sendUpstream()
         }
 
@@ -28,6 +31,7 @@ class LWWRegister(private var payload: String, private val clock: LamportClock) 
         payload = operation.value
         time = operation.time
         clock.update(operation.time)
+        fire(Unit)
     }
 
     @Serializable

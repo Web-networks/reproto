@@ -4,6 +4,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.Crdt
 import raid.neuroide.reproto.crdt.LocalSiteId
+import raid.neuroide.reproto.crdt.Observable
+import raid.neuroide.reproto.crdt.ObservableData
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.PlainClock
 
@@ -13,7 +15,8 @@ private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
 
 // TODO: implement and use SortedSet
 @Serializable
-class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : Crdt() {
+class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) :
+    Crdt(), Observable<Change> by ObservableData() {
     private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
 
     @Transient
@@ -97,15 +100,26 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
     override fun deliver(op: Operation) {
         when (val operation = op as SequenceOperation) {
             is SequenceOperationInsert -> {
-                elements[operation.pid] = operation.content
+                val (pid, content) = operation
+                val prev = elements.put(pid, content)
+                if (prev != content) {
+                    // TODO locate
+                    fire(InsertChange(-1, content))
+                }
             }
             is SequenceOperationDelete -> {
-                elements.remove(operation.pid)
+                val prev = elements.remove(operation.pid)
+                if (prev != null) {
+                    // TODO locate
+                    fire(DeleteChange(-1, prev))
+                }
             }
             is SequenceOperationMove -> {
                 elements[operation.pidFrom]?.let {
                     elements[operation.pidTo] = it
                     elements.remove(operation.pidFrom)
+                    // TODO locate
+                    fire(MoveChange(-1, -1, it))
                 }
             }
             else -> return

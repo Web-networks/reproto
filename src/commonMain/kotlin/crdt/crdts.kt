@@ -33,7 +33,6 @@ abstract class Crdt {
 }
 
 
-@OptIn(kotlinx.serialization.ImplicitReflectionSerializer::class) // TODO: use module-wide opt-in
 @Serializable(with = ContextSerializer::class)
 data class LocalSiteId(val id: String)
 

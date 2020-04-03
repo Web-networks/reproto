@@ -54,6 +54,8 @@ data class VectorTimestamp(val times: Map<String, Int>) : Comparable<VectorTimes
         return tryCompareTo(other) ?: throw IncomparableException()
     }
 
+    operator fun get(site: String) = times[site] ?: 0
+
     companion object {
         fun areComparable(a: VectorTimestamp, b: VectorTimestamp) = a.tryCompareTo(b) != null
     }
