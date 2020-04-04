@@ -42,7 +42,7 @@ class Bridge(private val service: ServiceNode) {
             service.postUpdate(update)
         }
 
-        override fun requestSync(sinceRevision: String) {
+        override fun requestSync(id: String, sinceRevision: String) {
             // not implemented
         }
     }

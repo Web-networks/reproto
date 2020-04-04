@@ -66,7 +66,7 @@ class ClientNode(site: String) {
         proto?.apply {
             setUpstream(upstream.child(id))
             log.setUpstream(logUpstream)
-            gateway.requestSync(serializer.serialize(log.currentTimestamp))
+            gateway.requestSync(id, serializer.serialize(log.currentTimestamp))
         }
 
         for (callback in pendingPrototypeCallbacks) {
@@ -86,7 +86,7 @@ class ClientNode(site: String) {
     private inner class LogSyncUpstream : LogUpstream {
         override fun save(update: Update) {
             currentPrototype?.let {
-                gateway.requestSync(serializer.serialize(it.log.currentTimestamp))
+                gateway.requestSync(currentPrototypeId!!, serializer.serialize(it.log.currentTimestamp))
             }
         }
 

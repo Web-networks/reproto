@@ -19,10 +19,10 @@ class Prototype constructor(private val context: NodeContextWrapper) {
     private val layerSequence = Sequence(this?.context?.siteId, LogootStrategy)
 
     @JsName("layers")
-    val layers: List<Layer>
+    val layers: Array<Layer>
         get() = layerSequence.content.map { id ->
             layersMap.getOrPut(id) { createLayer(id) }
-        }
+        }.toTypedArray()
 
     @JsName("addLayer")
     fun addLayer(position: Int): Layer {

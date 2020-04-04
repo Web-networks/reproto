@@ -12,5 +12,5 @@ interface ClientGateway {
     @JsName("publishUpdate")
     fun publishUpdate(update: String)
     @JsName("requestSync")
-    fun requestSync(sinceRevision: String)
+    fun requestSync(id: String, sinceRevision: String)
 }

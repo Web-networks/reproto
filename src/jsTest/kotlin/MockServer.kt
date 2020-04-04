@@ -37,7 +37,7 @@ class MockServer : ClientGateway {
             pSerializer.serialize(Prototype(context))
         }
 
-    override fun requestSync(sinceRevision: String) {
+    override fun requestSync(id: String, sinceRevision: String) {
         // not implemented
     }
 }
