@@ -1,13 +1,13 @@
 package raid.neuroide.reproto
 
-class MockStorage : LoadGateway, StoreGateway {
+class MockStorage : PrototypeStorageGateway {
     private val storage: MutableMap<String, String> = mutableMapOf()
 
-    override suspend fun load(id: String): String? {
+    override fun load(id: String): String? {
         return storage[id]
     }
 
-    override suspend fun store(id: String, prototype: String) {
+    override fun store(id: String, prototype: String) {
         storage[id] = prototype
     }
 }

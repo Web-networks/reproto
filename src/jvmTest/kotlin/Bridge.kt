@@ -15,12 +15,6 @@ class Bridge(private val service: ServiceNode) {
     fun newClientGateway(): ClientGateway = ClientGatewayImpl()
 
     private inner class ServiceGateway : ChangesGateway {
-        val processors: MutableList<UpdateProcessor> = mutableListOf()
-
-        override fun subscribe(processor: UpdateProcessor) {
-            processors.add(processor)
-        }
-
         override suspend fun publishUpdate(update: String) {
             clientProcessors.forEach {
                 it(update)
@@ -45,9 +39,7 @@ class Bridge(private val service: ServiceNode) {
         }
 
         override fun publishUpdate(update: String) = runBlocking {
-            serviceGateway.processors.forEach {
-                it.process(update)
-            }
+            service.postUpdate(update)
         }
     }
 }

@@ -29,7 +29,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
         return LogStorage(g, 5000, uSerializer)
     }
 
-    suspend fun createPrototype(): String {
+    fun createPrototype(): String {
         val proto = Prototype(context.wrapped())
         val id = context.issueId()
         val serialized = pSerializer.serialize(proto)
@@ -92,7 +92,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
         }
     }
 
-    private suspend fun storePrototype(id: String, prototype: Prototype) {
+    private fun storePrototype(id: String, prototype: Prototype) {
         val serialized = pSerializer.serialize(prototype)
         psGateways.forEach {
             it.store(id, serialized)

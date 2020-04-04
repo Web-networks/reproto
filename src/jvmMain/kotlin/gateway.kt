@@ -3,8 +3,8 @@ package raid.neuroide.reproto
 interface Gateway
 
 interface PrototypeStorageGateway : Gateway {
-    suspend fun load(id: String): String?
-    suspend fun store(id: String, prototype: String)
+    fun load(id: String): String?
+    fun store(id: String, prototype: String)
 }
 
 interface LogStorageGateway : Gateway {
