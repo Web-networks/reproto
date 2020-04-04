@@ -11,7 +11,6 @@ interface StoreGateway : Gateway {
 }
 
 interface ChangesGateway : Gateway {
-    fun subscribe(processor: UpdateProcessor)
     //TODO
     //    fun requestSync(vectorTimestamp: VectorTimestamp)
     suspend fun publishUpdate(update: String)
@@ -22,8 +21,4 @@ interface LogStorageGateway {
 
     fun save(prototypeId: String, entry: Entry)
     fun restore(prototypeId: String, sinceRevision: Map<String, Int>, maxCount: Int): List<Entry>
-}
-
-interface UpdateProcessor {
-    suspend fun process(update: String)
 }

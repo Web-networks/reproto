@@ -22,7 +22,6 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
             lGateways.add(g)
         }
         if (g is ChangesGateway) {
-            g.subscribe(Processor(g))
             cGateways.add(g)
         }
         if (g is LogStorageGateway) {
@@ -62,6 +61,11 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
         }
     }
 
+    suspend fun postUpdate(update: String) {
+        val upd = uSerializer.deserialize(update)
+        processUpdate(upd, update)
+    }
+
     private suspend fun requestPrototype(id: String): Prototype? {
         for (g in lGateways) {
             val serialized = g.load(id)
@@ -75,7 +79,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
         return null
     }
 
-    private suspend fun processUpdate(update: Update, serialized: String, sourceGateway: Gateway) {
+    private suspend fun processUpdate(update: Update, serialized: String) {
         if (!update.id.hasNext)
             return
 
@@ -84,19 +88,17 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
             if (it == null)
                 return@use
             it.processUpdate(update)
-            storePrototype(id, it, sourceGateway)
+            storePrototype(id, it)
         }
         // TODO: work with ReplicatedLog?
         for (g in cGateways) {
-//            if (g == sourceGateway)
-//                continue
             g.publishUpdate(serialized)
         }
     }
 
-    private suspend fun storePrototype(id: String, prototype: Prototype, exceptGateway: Gateway) {
+    private suspend fun storePrototype(id: String, prototype: Prototype) {
         val serialized = pSerializer.serialize(prototype)
-        sGateways/* .filter { it != exceptGateway } */.forEach {
+        sGateways.forEach {
             it.store(id, serialized)
         }
     }
@@ -108,13 +110,6 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
 
         override fun restore(sinceRevision: VectorTimestamp, maxCount: Int): List<Update>? {
             return logStorage?.restore(prototypeId, sinceRevision, maxCount)
-        }
-    }
-
-    private inner class Processor(private val g: Gateway) : UpdateProcessor {
-        override suspend fun process(update: String) {
-            val upd = uSerializer.deserialize(update)
-            processUpdate(upd, update, g)
         }
     }
 }
