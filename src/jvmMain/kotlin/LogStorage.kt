@@ -14,7 +14,7 @@ internal class LogStorage(
     }
 
     fun restore(prototypeId: String, sinceRevision: VectorTimestamp, maxCount: Int): List<Update>? {
-        return gateway.restore(prototypeId, sinceRevision.times, maxCount).map {
+        return gateway.restore(prototypeId, sinceRevision.times, maxCount)?.map {
             it.toUpdate()
         }
     }
