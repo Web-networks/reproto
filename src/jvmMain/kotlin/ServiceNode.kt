@@ -2,24 +2,20 @@ package raid.neuroide.reproto
 
 import raid.neuroide.reproto.crdt.VectorTimestamp
 
-class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
+class ServiceNode(site: String, inMemoryThreshold: Int) {
     private val context = DefaultContext(site)
     private val uSerializer = UpdateSerializationManager(context)
     private val pSerializer = PrototypeSerializationManager(context)
 
     private val cGateways: MutableList<ChangesGateway> = mutableListOf()
-    private val lGateways: MutableList<LoadGateway> = mutableListOf()
-    private val sGateways: MutableList<StoreGateway> = mutableListOf()
+    private val psGateways: MutableList<PrototypeStorageGateway> = mutableListOf()
     private var logStorage: LogStorage? = null
 
     private val prototypes = PreemptiveContainer(inMemoryThreshold, true, ::requestPrototype)
 
     fun addGateway(g: Gateway) {
-        if (g is StoreGateway) {
-            sGateways.add(g)
-        }
-        if (g is LoadGateway) {
-            lGateways.add(g)
+        if (g is PrototypeStorageGateway) {
+            psGateways.add(g)
         }
         if (g is ChangesGateway) {
             cGateways.add(g)
@@ -37,14 +33,14 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
         val proto = Prototype(context.wrapped())
         val id = context.issueId()
         val serialized = pSerializer.serialize(proto)
-        sGateways.forEach { g ->
+        psGateways.forEach { g ->
             g.store(id, serialized)
         }
         prototypes.putIfAbsent(id, proto)
         return id
     }
 
-    override suspend fun load(id: String): String? {
+    suspend fun load(id: String): String? {
         return prototypes.use(id) {
             it?.let {
                 pSerializer.serialize(it)
@@ -67,7 +63,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
     }
 
     private suspend fun requestPrototype(id: String): Prototype? {
-        for (g in lGateways) {
+        for (g in psGateways) {
             val serialized = g.load(id)
             if (serialized != null) {
                 val proto = pSerializer.deserialize(serialized)
@@ -98,7 +94,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) : LoadGateway {
 
     private suspend fun storePrototype(id: String, prototype: Prototype) {
         val serialized = pSerializer.serialize(prototype)
-        sGateways.forEach {
+        psGateways.forEach {
             it.store(id, serialized)
         }
     }
