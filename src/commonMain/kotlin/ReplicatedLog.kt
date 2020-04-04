@@ -28,7 +28,9 @@ internal class ReplicatedLog(@Suppress("CanBeParameter") private val context: No
     }
 
     fun issueLocalUpdate(id: IdChain, payload: UpdatePayload): Update {
-        return Update(id, issueLocalTimestamp(), payload)
+        val update = Update(id, issueLocalTimestamp(), payload)
+        myUpstream?.save(update)
+        return update
     }
 
     /**

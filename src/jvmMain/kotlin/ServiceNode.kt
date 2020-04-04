@@ -4,8 +4,7 @@ import raid.neuroide.reproto.crdt.VectorTimestamp
 
 class ServiceNode(site: String, inMemoryThreshold: Int) {
     private val context = DefaultContext(site)
-    private val uSerializer = UpdateSerializationManager(context)
-    private val pSerializer = PrototypeSerializationManager(context)
+    private val serializer = SerializationManager(context)
 
     private val cGateways: MutableList<ChangesGateway> = mutableListOf()
     private val psGateways: MutableList<PrototypeStorageGateway> = mutableListOf()
@@ -26,13 +25,13 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
     }
 
     private fun createLogStorage(g: LogStorageGateway): LogStorage? {
-        return LogStorage(g, 5000, uSerializer)
+        return LogStorage(g, 5000, serializer)
     }
 
     fun createPrototype(): String {
         val proto = Prototype(context.wrapped())
         val id = context.issueId()
-        val serialized = pSerializer.serialize(proto)
+        val serialized = serializer.serialize(proto)
         psGateways.forEach { g ->
             g.store(id, serialized)
         }
@@ -43,7 +42,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
     suspend fun load(id: String): String? {
         return prototypes.use(id) {
             it?.let {
-                pSerializer.serialize(it)
+                serializer.serialize(it)
             }
         }
     }
@@ -53,12 +52,12 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
         return prototypes.use(id) {
             it?.log?.getUpdates(sinceRevision, maxCount)
         }?.map {
-            uSerializer.serialize(it)
+            serializer.serialize(it)
         }
     }
 
     suspend fun postUpdate(update: String) {
-        val upd = uSerializer.deserialize(update)
+        val upd = serializer.deserializeUpdate(update)
         processUpdate(upd, update)
     }
 
@@ -66,9 +65,8 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
         for (g in psGateways) {
             val serialized = g.load(id)
             if (serialized != null) {
-                val proto = pSerializer.deserialize(serialized)
-                // no need in upstream
-                // because we don't perform local changes
+                val proto = serializer.deserializePrototype(serialized)
+                proto.log.setUpstream(LogStorageUpstream(id))
                 return proto
             }
         }
@@ -93,7 +91,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
     }
 
     private fun storePrototype(id: String, prototype: Prototype) {
-        val serialized = pSerializer.serialize(prototype)
+        val serialized = serializer.serialize(prototype)
         psGateways.forEach {
             it.store(id, serialized)
         }

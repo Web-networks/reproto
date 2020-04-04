@@ -9,7 +9,7 @@ class MockServer : ClientGateway {
     private val processors: MutableList<UpdateProcessor> = mutableListOf()
     private val prototypes: MutableMap<String, String> = mutableMapOf()
 
-    private val pSerializer = PrototypeSerializationManager(context)
+    private val pSerializer = SerializationManager(context)
 
     override fun setReceiver(receiver: PrototypeReceiver) {
         receivers.add(receiver)
@@ -19,7 +19,7 @@ class MockServer : ClientGateway {
         processors.add(processor)
     }
 
-    override fun loadAndSubscribe(id: String) {
+    override fun load(id: String) {
         val proto = getPrototype(id)
         for (receiver in receivers) {
             receiver(id, proto)
@@ -37,7 +37,7 @@ class MockServer : ClientGateway {
             pSerializer.serialize(Prototype(context))
         }
 
-    override fun requestSync(vectorTimestamp: String) {
-        throw NotImplementedError()
+    override fun requestSync(sinceRevision: String) {
+        // not implemented
     }
 }

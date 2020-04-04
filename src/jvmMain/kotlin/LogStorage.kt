@@ -5,7 +5,7 @@ import raid.neuroide.reproto.crdt.VectorTimestamp
 internal class LogStorage(
     private val gateway: LogStorageGateway,
     private val inMemoryThreshold: Int,
-    private val serializer: UpdateSerializationManager
+    private val serializer: SerializationManager
 ) {
     // TODO: cache updates in memory
     // TODO: use more efficient serialization
@@ -24,6 +24,6 @@ internal class LogStorage(
     }
 
     private fun LogStorageGateway.Entry.toUpdate(): Update {
-        return serializer.deserialize(payload)
+        return serializer.deserializeUpdate(payload)
     }
 }

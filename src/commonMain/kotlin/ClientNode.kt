@@ -1,13 +1,14 @@
 package raid.neuroide.reproto
 
 import raid.neuroide.reproto.crdt.Operation
+import raid.neuroide.reproto.crdt.VectorTimestamp
 import kotlin.js.JsName
 
 class ClientNode(site: String) {
     private val context = DefaultContext(site)
     private val upstream = Upstream()
-    private val uSerializer = UpdateSerializationManager(context)
-    private val pSerializer = PrototypeSerializationManager(context)
+    private val logUpstream = LogSyncUpstream()
+    private val serializer = SerializationManager(context)
 
     private lateinit var gateway: ClientGateway
 
@@ -25,7 +26,7 @@ class ClientNode(site: String) {
                 pendingPrototypeCallbacks.clear()
                 requestedPrototypeId = id
                 pendingPrototypeCallbacks.add(callback)
-                gateway.loadAndSubscribe(id)
+                gateway.load(id)
             } else {
                 pendingPrototypeCallbacks.add(callback)
             }
@@ -35,11 +36,11 @@ class ClientNode(site: String) {
     @JsName("setGateway")
     fun setGateway(g: ClientGateway) {
         g.subscribe { update ->
-            val upd = uSerializer.deserialize(update)
+            val upd = serializer.deserializeUpdate(update)
             processUpdate(upd)
         }
         g.setReceiver { id, proto ->
-            val prototype = proto?.let { pSerializer.deserialize(it) }
+            val prototype = proto?.let { serializer.deserializePrototype(it) }
             receivePrototype(id, prototype)
         }
         gateway = g
@@ -60,8 +61,13 @@ class ClientNode(site: String) {
 
         currentPrototype = proto
         currentPrototypeId = requestedPrototypeId
-        proto?.setUpstream(upstream.child(id))
         requestedPrototypeId = null
+
+        proto?.apply {
+            setUpstream(upstream.child(id))
+            log.setUpstream(logUpstream)
+            gateway.requestSync(serializer.serialize(log.currentTimestamp))
+        }
 
         for (callback in pendingPrototypeCallbacks) {
             callback(proto)
@@ -72,8 +78,20 @@ class ClientNode(site: String) {
     private inner class Upstream : ChainedUpstream() {
         override fun process(id: IdChain, op: Operation) {
             val update = (currentPrototype ?: return).log.issueLocalUpdate(id, UpdatePayload(op))
-            val serialized = uSerializer.serialize(update)
+            val serialized = serializer.serialize(update)
             gateway.publishUpdate(serialized)
+        }
+    }
+
+    private inner class LogSyncUpstream : LogUpstream {
+        override fun save(update: Update) {
+            currentPrototype?.let {
+                gateway.requestSync(serializer.serialize(it.log.currentTimestamp))
+            }
+        }
+
+        override fun restore(sinceRevision: VectorTimestamp, maxCount: Int): List<Update>? {
+            return null
         }
     }
 }

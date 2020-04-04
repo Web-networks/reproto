@@ -25,7 +25,7 @@ class Bridge(private val service: ServiceNode) {
     private inner class ClientGatewayImpl : ClientGateway {
         private var myReceiver: PrototypeReceiver? = null
 
-        override fun loadAndSubscribe(id: String) {
+        override fun load(id: String) {
             val proto = runBlocking { service.load(id) }
             myReceiver?.invoke(id, proto)
         }
@@ -40,6 +40,10 @@ class Bridge(private val service: ServiceNode) {
 
         override fun publishUpdate(update: String) = runBlocking {
             service.postUpdate(update)
+        }
+
+        override fun requestSync(sinceRevision: String) {
+            // not implemented
         }
     }
 }
