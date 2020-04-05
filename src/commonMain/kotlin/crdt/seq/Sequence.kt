@@ -101,14 +101,14 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
                 val prev = elements.put(pid, content)
                 if (prev != content) {
                     // TODO locate
-                    fire(InsertChange(-1, content))
+                    fire(Change.Insert(-1, content))
                 }
             }
             is SequenceOperationDelete -> {
                 val prev = elements.remove(operation.pid)
                 if (prev != null) {
                     // TODO locate
-                    fire(DeleteChange(-1, prev))
+                    fire(Change.Delete(-1, prev))
                 }
             }
             is SequenceOperationMove -> {
@@ -116,7 +116,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
                     elements[operation.pidTo] = it
                     elements.remove(operation.pidFrom)
                     // TODO locate
-                    fire(MoveChange(-1, -1, it))
+                    fire(Change.Move(-1, -1, it))
                 }
             }
             else -> return

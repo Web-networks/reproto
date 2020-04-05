@@ -2,6 +2,7 @@ package raid.neuroide.reproto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import raid.neuroide.reproto.crdt.seq.Change
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
 import raid.neuroide.reproto.crdt.seq.Sequence
 import kotlin.js.JsName
@@ -10,6 +11,9 @@ import kotlin.js.JsName
 class Prototype constructor(private val context: NodeContextWrapper) {
     private val layersMap: MutableMap<String, Layer> = mutableMapOf()
     internal val log = ReplicatedLog(context)
+
+    @Transient
+    private var listeners: PrototypeListener? = null
 
     @Transient
     private var myUpstream: ChainedUpstream? = null
@@ -21,7 +25,7 @@ class Prototype constructor(private val context: NodeContextWrapper) {
     @JsName("layers")
     val layers: Array<Layer>
         get() = layerSequence.content.map { id ->
-            layersMap.getOrPut(id) { createLayer(id) }
+            getOrCreateLayer(id)
         }.toTypedArray()
 
     @JsName("addLayer")
@@ -45,6 +49,25 @@ class Prototype constructor(private val context: NodeContextWrapper) {
         // TODO: delete from map (on all nodes!)
     }
 
+    @JsName("setListeners")
+    fun setListeners(l: PrototypeListener) {
+        if (listeners == null) {
+            layerSequence.setListener(::layerSequenceChanged)
+        }
+        listeners = l
+        for (layer in layers) {
+            layer.setListeners(l)
+        }
+    }
+
+    private fun layerSequenceChanged(change: Change) {
+        when (change) {
+            is Change.Insert -> listeners?.layerAdded(change.position, getOrCreateLayer(change.value))
+            is Change.Delete -> listeners?.layerRemoved(change.position, getOrCreateLayer(change.value))
+            is Change.Move -> listeners?.layerMoved(change.from, change.to, getOrCreateLayer(change.value))
+        }
+    }
+
     internal fun setUpstream(upstream: ChainedUpstream) {
         myUpstream = upstream
         layerSequence.setUpstream(upstream)
@@ -59,11 +82,15 @@ class Prototype constructor(private val context: NodeContextWrapper) {
 
         if (update.id.hasNext) {
             val layerId = update.id.shift()
-            layersMap.getOrPut(layerId) {
-                createLayer(layerId)
-            }.processUpdate(update)
+            getOrCreateLayer(layerId).processUpdate(update)
         } else {
             applyUpdate(update.payload)
+        }
+    }
+
+    private fun getOrCreateLayer(layerId: String): Layer {
+        return layersMap.getOrPut(layerId) {
+            createLayer(layerId)
         }
     }
 

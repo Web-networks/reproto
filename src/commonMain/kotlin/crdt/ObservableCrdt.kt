@@ -1,15 +1,13 @@
 package raid.neuroide.reproto.crdt
 
 abstract class ObservableCrdt<Change> : Crdt() {
-    private val listeners: MutableList<(Change) -> Unit> = mutableListOf()
+    private var listener: ((Change) -> Unit)? = null
 
-    fun addListener(l: (Change) -> Unit) {
-        listeners.add(l)
+    fun setListener(l: ((Change) -> Unit)?) {
+        listener = l
     }
     
     protected fun fire(change: Change) {
-        for (l in listeners) {
-            l(change)
-        }
+        listener?.invoke(change)
     }
 }

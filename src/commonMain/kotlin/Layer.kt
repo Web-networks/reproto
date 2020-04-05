@@ -12,12 +12,30 @@ class Layer constructor(private val context: NodeContextWrapper) {
     private val parameters: MutableMap<String, LWWRegister> = mutableMapOf()
 
     @Transient
+    private var listeners: PrototypeListener? = null
+
+    @Transient
     private var myUpstream: ChainedUpstream? = null
 
     @JsName("get")
     operator fun get(paramName: String): RegisterWrapper {
         val rg = parameters.getOrPut(paramName) { createRegister(paramName) }
         return RegisterWrapper(rg)
+    }
+
+    internal fun setListeners(l: PrototypeListener) {
+        if (listeners == null) {
+            for ((name, param) in parameters) {
+                param.setListener {
+                    parameterChanged(name)
+                }
+            }
+        }
+        listeners = l
+    }
+
+    private fun parameterChanged(name: String) {
+        listeners?.parameterChanged(this, name, this[name])
     }
 
     internal fun setUpstream(upstream: ChainedUpstream) {

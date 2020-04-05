@@ -35,7 +35,6 @@ abstract class Crdt {
 data class LocalSiteId(val id: String)
 
 
-
 fun getCrdtSerializers(siteId: LocalSiteId): SerialModule {
     return SerializersModule {
         contextual(LocalSiteId::class, ContextualInjectorSerializer(siteId))
@@ -52,5 +51,6 @@ fun getCrdtSerializers(siteId: LocalSiteId): SerialModule {
         }
     }
 }
+
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 private inline fun <T> KSerializer<*>.cast(): KSerializer<T> = this as KSerializer<T>
