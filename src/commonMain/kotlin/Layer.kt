@@ -25,10 +25,8 @@ class Layer constructor(private val context: NodeContextWrapper) {
 
     internal fun setListeners(l: PrototypeListener) {
         if (listeners == null) {
-            for ((name, param) in parameters) {
-                param.setListener {
-                    parameterChanged(name)
-                }
+            for ((name, register) in parameters) {
+                register.setListener { parameterChanged(name) }
             }
         }
         listeners = l
@@ -55,6 +53,8 @@ class Layer constructor(private val context: NodeContextWrapper) {
 
     private fun createRegister(paramName: String): LWWRegister {
         val rg = LWWRegister("", context.siteId)
+        if (listeners != null)
+            rg.setListener { parameterChanged(paramName) }
         myUpstream?.let { rg.setUpstream(it.child(paramName)) }
         return rg
     }

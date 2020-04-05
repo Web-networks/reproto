@@ -95,6 +95,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
     }
 
     override fun deliver(op: Operation) {
+        _sortedIdentifiers = null
         when (val operation = op as SequenceOperation) {
             is SequenceOperationInsert -> {
                 val (pid, content) = operation
@@ -121,6 +122,5 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
             }
             else -> return
         }
-        _sortedIdentifiers = null
     }
 }

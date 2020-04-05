@@ -96,6 +96,7 @@ class Prototype constructor(private val context: NodeContextWrapper) {
 
     private fun createLayer(id: String): Layer {
         val layer = Layer(context)
+        listeners?.let { layer.setListeners(it) }
         myUpstream?.let { layer.setUpstream(it.child(id)) }
         return layer
     }
