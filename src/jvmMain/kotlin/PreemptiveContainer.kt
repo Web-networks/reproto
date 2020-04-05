@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 private typealias Provider<K, V> = suspend (K) -> V?
 
-class PreemptiveContainer<K, V>(
+internal class PreemptiveContainer<K, V>(
     private val thresholdCapacity: Int = 1000,
     private val preemptNulls: Boolean = true,
     private val provider: Provider<K, V>

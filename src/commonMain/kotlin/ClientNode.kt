@@ -4,8 +4,8 @@ import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.VectorTimestamp
 import kotlin.js.JsName
 
-class ClientNode(site: String) {
-    private val context = DefaultContext(site)
+class ClientNode(site: String, idCounterInitial: Int = 0) {
+    private val context = DefaultContext(site, idCounterInitial)
     private val upstream = Upstream()
     private val logUpstream = LogSyncUpstream()
     private val serializer = SerializationManager(context)

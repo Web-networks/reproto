@@ -2,8 +2,12 @@ package raid.neuroide.reproto
 
 import raid.neuroide.reproto.crdt.VectorTimestamp
 
-class ServiceNode(site: String, inMemoryThreshold: Int) {
-    private val context = DefaultContext(site)
+class ServiceNode(
+    site: String,
+    inMemoryThreshold: Int,
+    idCounter: PersistentValue<Long> = InMemoryValue()
+) {
+    private val context = ServiceContext(site, idCounter)
     private val serializer = SerializationManager(context)
 
     private val cGateways: MutableList<ChangesGateway> = mutableListOf()

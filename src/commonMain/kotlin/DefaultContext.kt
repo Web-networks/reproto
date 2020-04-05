@@ -2,9 +2,8 @@ package raid.neuroide.reproto
 
 import raid.neuroide.reproto.crdt.LocalSiteId
 
-class DefaultContext(site: String) : NodeContext {
-    // TODO: node must persist this counter
-    private var idCounter: Int = 0
+class DefaultContext(site: String, idCounterInitial: Int = 0) : NodeContext {
+    private var idCounter: Int = idCounterInitial
 
     override val siteId = LocalSiteId(site)
 
