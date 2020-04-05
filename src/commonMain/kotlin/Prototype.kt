@@ -31,11 +31,8 @@ class Prototype constructor(private val context: NodeContextWrapper) {
     @JsName("addLayer")
     fun addLayer(position: Int): Layer {
         val layerId = context.issueId()
-        val layer = createLayer(layerId)
-
         layerSequence.insert(position, layerId)
-        layersMap[layerId] = layer
-        return layer
+        return getOrCreateLayer(layerId)
     }
 
     @JsName("moveLayer")
