@@ -35,6 +35,7 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
         psGateways.forEach { g ->
             g.store(id, serialized)
         }
+        initPrototype(id, proto)
         prototypes.putIfAbsent(id, proto)
         return id
     }
@@ -66,11 +67,15 @@ class ServiceNode(site: String, inMemoryThreshold: Int) {
             val serialized = g.load(id)
             if (serialized != null) {
                 val proto = serializer.deserializePrototype(serialized)
-                proto.log.setUpstream(LogStorageUpstream(id))
+                initPrototype(id, proto)
                 return proto
             }
         }
         return null
+    }
+
+    private fun initPrototype(id: String, proto: Prototype) {
+        proto.log.setUpstream(LogStorageUpstream(id))
     }
 
     private suspend fun processUpdate(update: Update, serialized: String) {
