@@ -94,6 +94,7 @@ class ServiceNode(
             storePrototype(id, it)
         }
         // TODO: work with ReplicatedLog?
+        // TODO: call them under lock
         for (g in cGateways) {
             g.publishUpdate(serialized)
         }

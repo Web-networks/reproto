@@ -16,6 +16,7 @@ private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
 class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : ObservableCrdt<Change>() {
     private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
 
+    // FIXME: value of the clock must be persistent
     @Transient
     private val clock = PlainClock()
 

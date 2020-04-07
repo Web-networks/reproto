@@ -8,7 +8,7 @@ import raid.neuroide.reproto.crdt.RegisterWrapper
 import kotlin.js.JsName
 
 @Serializable
-class Layer constructor(private val context: NodeContextWrapper) {
+class Layer internal constructor(private val context: NodeContextWrapper) {
     private val parameters: MutableMap<String, LWWRegister> = mutableMapOf()
 
     @Transient

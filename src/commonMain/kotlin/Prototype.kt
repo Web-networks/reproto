@@ -8,7 +8,7 @@ import raid.neuroide.reproto.crdt.seq.Sequence
 import kotlin.js.JsName
 
 @Serializable
-class Prototype constructor(private val context: NodeContextWrapper) {
+class Prototype internal constructor(private val context: NodeContextWrapper) {
     private val layersMap: MutableMap<String, Layer> = mutableMapOf()
     internal val log = ReplicatedLog(context)
 
