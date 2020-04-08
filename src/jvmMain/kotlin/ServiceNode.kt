@@ -93,12 +93,14 @@ class ServiceNode(
             if (it == null)
                 return@use
             it.processUpdate(update)
+
+            // TODO: dont store prototype on each update
             storePrototype(id, it)
-        }
-        // TODO: work with ReplicatedLog?
-        // TODO: call them under lock
-        for (g in cGateways) {
-            g.publishUpdate(serialized)
+
+            // TODO: work with ReplicatedLog?
+            for (g in cGateways) {
+                g.publishUpdate(serialized)
+            }
         }
     }
 

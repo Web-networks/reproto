@@ -27,7 +27,6 @@ class IntegrationTest {
         repeat(100) { service.createPrototype() }
 
         p1.addLayer(0)
-        // TODO: wait for io completion
         assertEquals(1, p2.layers.size)
 
         repeat(100) { service.createPrototype() }

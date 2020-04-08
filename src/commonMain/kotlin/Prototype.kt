@@ -45,7 +45,6 @@ class Prototype internal constructor(private val siteId: LocalSiteId) {
     @JsName("removeLayer")
     fun removeLayer(position: Int) {
         layerSequence.delete(position)
-        // TODO: delete from map (on all nodes!)
     }
 
     @JsName("setListeners")
@@ -62,7 +61,10 @@ class Prototype internal constructor(private val siteId: LocalSiteId) {
     private fun layerSequenceChanged(change: Change) {
         when (change) {
             is Change.Insert -> listeners?.layerAdded(change.position, getOrCreateLayer(change.value))
-            is Change.Delete -> listeners?.layerRemoved(change.position, getOrCreateLayer(change.value))
+            is Change.Delete -> {
+                listeners?.layerRemoved(change.position, getOrCreateLayer(change.value))
+                layersMap.remove(change.value)
+            }
             is Change.Move -> listeners?.layerMoved(change.from, change.to, getOrCreateLayer(change.value))
         }
     }
