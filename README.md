@@ -71,12 +71,12 @@ Note that the value stored in the register is actually string. Read/write to `in
 
 Listeners is an object which must implement [the interface `PrototypeListener`](https://github.com/Web-networks/reproto/blob/master/src/commonMain/kotlin/PrototypeListener.kt). In terms of JavaScript it means that all methods of the interface must be presented.
 
-| Method                                         | Comment                         |
-| ---------------------------------------------- | ------------------------------- |
-| `layerAdded(index, layer)`                     |                                 |
-| `layerRemoved(index, layer)`                   |                                 |
-| `layerMoved(from, to, layer)`                  |                                 |
-| `parameterChanged(layer, paramName, register)` | `register` is `RegisterWrapper` |
+| Method                                         | Comment                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| `layerAdded(index, layer)`                     |                                                              |
+| `layerRemoved(index, layer)`                   |                                                              |
+| `layerMoved(from, to, layer)`                  | `from` an index of the layer in the source array and `to` is an index in the resulting array of layers. |
+| `parameterChanged(layer, paramName, register)` | `register` is `RegisterWrapper`.                             |
 
 Note that currently indices are not computed correctly but it is going to be fixed soon.
 

@@ -1,56 +1,42 @@
 package raid.neuroide.reproto.crdt.seq
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import raid.neuroide.reproto.common.IndexedSet
+import raid.neuroide.reproto.common.indexedSetOf
 import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.ObservableCrdt
 import raid.neuroide.reproto.crdt.Operation
-import raid.neuroide.reproto.crdt.PlainClock
 
 private val LeftId = Identifier(emptyList(), -1)
 private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
 
 
-// TODO: implement and use SortedSet
 @Serializable
 class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : ObservableCrdt<Change>() {
-    private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
-
-    @Transient
-    private val clock = PlainClock()
-
-    @Transient
-    private var _sortedIdentifiers: List<Identifier>? = null
-
-    private val sortedIdentifiers: List<Identifier>
-        get() {
-            if (_sortedIdentifiers == null)
-                _sortedIdentifiers = elements.keys.sorted()
-            return _sortedIdentifiers!!
-        }
+    private val elements: IndexedSet<Element> = indexedSetOf(Element(LeftId), Element(RightId))
 
     val content: List<String>
-        get() {
-            return sortedIdentifiers.mapNotNull {
-                if (it == LeftId || it == RightId)
-                    null
-                else
-                    elements[it]
-            }
+        get() = elements.mapNotNull {
+            if (it.pid == LeftId || it.pid == RightId)
+                null
+            else
+                it.value
         }
 
     val size: Int
         get() = elements.size - 2
 
     operator fun get(index: Int): String {
-        return content[index]
+        if (index >= size)
+            throw IndexOutOfBoundsException()
+        return content[index + 1]
     }
 
     fun insert(index: Int, content: String) {
         checkLimits(index, true)
 
-        val lId = sortedIdentifiers[index]
-        val rId = sortedIdentifiers[index + 1]
+        val lId = elements[index].pid
+        val rId = elements[index + 1].pid
 
         val newId = allocateIdentifier(lId, rId)
         val op = SequenceOperationInsert(newId, content)
@@ -59,7 +45,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
 
     fun delete(index: Int) {
         checkLimits(index)
-        val id = sortedIdentifiers[index + 1]
+        val id = elements[index + 1].pid
 
         val op = SequenceOperationDelete(id)
         commitLocallyGenerated(op)
@@ -69,9 +55,9 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
         checkLimits(from)
         checkLimits(to, true)
 
-        val fromId = sortedIdentifiers[from + 1]
-        val toLId = sortedIdentifiers[to]
-        val toRId = sortedIdentifiers[to + 1]
+        val fromId = elements[from + 1].pid
+        val toLId = elements[to].pid
+        val toRId = elements[to + 1].pid
 
         val newId = allocateIdentifier(toLId, toRId)
         val op = SequenceOperationMove(fromId, newId)
@@ -96,32 +82,44 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
     }
 
     override fun deliver(op: Operation) {
-        _sortedIdentifiers = null
         when (val operation = op as SequenceOperation) {
             is SequenceOperationInsert -> {
                 val (pid, content) = operation
-                val prev = elements.put(pid, content)
-                if (prev != content) {
-                    // TODO locate
-                    fire(Change.Insert(-1, content))
+                val element = Element(pid, content)
+                val isAdded = elements.add(element)
+                if (isAdded) {
+                    fire(Change.Insert(elements.indexOf(element), content))
                 }
             }
             is SequenceOperationDelete -> {
-                val prev = elements.remove(operation.pid)
-                if (prev != null) {
-                    // TODO locate
-                    fire(Change.Delete(-1, prev))
+                val index = elements.indexOf(Element(operation.pid))
+                if (index >= 0) {
+                    val content = elements.removeAt(index).value
+                    fire(Change.Delete(index, content))
                 }
             }
             is SequenceOperationMove -> {
-                elements[operation.pidFrom]?.let {
-                    elements[operation.pidTo] = it
-                    elements.remove(operation.pidFrom)
-                    // TODO locate
-                    fire(Change.Move(-1, -1, it))
+                val fromIndex = elements.indexOf(Element(operation.pidFrom))
+                if (fromIndex >= 0) {
+                    val content = elements[fromIndex].value
+                    val newElement = Element(operation.pidTo, content)
+
+                    elements.removeAt(fromIndex)
+                    val toIndex = elements.addIndexed(newElement)
+
+                    fire(Change.Move(fromIndex, toIndex, content))
                 }
             }
             else -> return
+        }
+    }
+
+    @Serializable
+    private class Element(val pid: Identifier, val value: String) : Comparable<Element> {
+        constructor(pid : Identifier) : this(pid, "")
+
+        override fun compareTo(other: Element): Int {
+            return compareValues(pid, other.pid)
         }
     }
 }

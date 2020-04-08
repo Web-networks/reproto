@@ -1,6 +1,8 @@
 package raid.neuroide.reproto.crdt
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
+import raid.neuroide.reproto.common.DelegatedMapSerializer
 import kotlin.math.max
 
 
@@ -34,7 +36,7 @@ class PlainClock {
     fun next() = ++time
 }
 
-@Serializable
+@Serializable(with = VectorTimestamp.Serializer::class)
 data class VectorTimestamp(val times: Map<String, Int>) : Comparable<VectorTimestamp> {
     fun tryCompareTo(other: VectorTimestamp): Int? {
         val sites = times.keys + other.times.keys
@@ -58,6 +60,16 @@ data class VectorTimestamp(val times: Map<String, Int>) : Comparable<VectorTimes
 
     companion object {
         fun areComparable(a: VectorTimestamp, b: VectorTimestamp) = a.tryCompareTo(b) != null
+    }
+
+    class Serializer : DelegatedMapSerializer<VectorTimestamp, String, Int>(String.serializer(), Int.serializer()) {
+        override fun extract(value: VectorTimestamp): Map<String, Int> {
+            return value.times
+        }
+
+        override fun construct(map: Map<String, Int>): VectorTimestamp {
+            return VectorTimestamp(map)
+        }
     }
 }
 
