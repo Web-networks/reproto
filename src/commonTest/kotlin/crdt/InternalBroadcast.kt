@@ -1,6 +1,7 @@
 package raid.neuroide.reproto.crdt
 
 class InternalBroadcast : Upstream {
+    private var localIndex: Long = 0
     private val crdts: MutableList<Crdt> = mutableListOf()
     private val pending: MutableList<Operation> = mutableListOf()
 
@@ -26,6 +27,8 @@ class InternalBroadcast : Upstream {
         crdts.add(crdt)
         crdt.setUpstream(this)
     }
+
+    override fun nextLocalIndex(): Long = ++localIndex
 
     private fun deliverPendingOperations() {
         for (op in pending) {

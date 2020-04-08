@@ -18,6 +18,7 @@ interface Operation
 
 interface Upstream {
     fun deliver(op: Operation)
+    fun nextLocalIndex(): Long
 }
 
 abstract class Crdt {

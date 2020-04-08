@@ -30,7 +30,8 @@ class Prototype internal constructor(private val context: NodeContextWrapper) {
 
     @JsName("addLayer")
     fun addLayer(position: Int): Layer {
-        val layerId = context.issueId()
+        val localIndex = log.nextLocalIndex()
+        val layerId = "${context.siteId.id}::${localIndex}"
         layerSequence.insert(position, layerId)
         return getOrCreateLayer(layerId)
     }
@@ -65,11 +66,11 @@ class Prototype internal constructor(private val context: NodeContextWrapper) {
         }
     }
 
-    internal fun setUpstream(upstream: ChainedUpstream) {
-        myUpstream = upstream
-        layerSequence.setUpstream(upstream)
+    internal fun setUpstream(upstream: ChainedUpstreamBud) {
+        myUpstream = upstream.child { log.nextLocalIndex().toLong() }
+        layerSequence.setUpstream(myUpstream!!)
         for ((layerId, layer) in layersMap) {
-            layer.setUpstream(upstream.child(layerId))
+            layer.setUpstream(myUpstream!!.child(layerId))
         }
     }
 

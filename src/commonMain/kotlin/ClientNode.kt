@@ -6,7 +6,7 @@ import kotlin.js.JsName
 
 class ClientNode(site: String, idCounterInitial: Int = 0) {
     private val context = DefaultContext(site, idCounterInitial)
-    private val upstream = Upstream()
+    private val upstream = ChainedUpstreamBud(::processSerializedUpdate)
     private val logUpstream = LogSyncUpstream()
     private val serializer = SerializationManager(context)
 
@@ -75,12 +75,10 @@ class ClientNode(site: String, idCounterInitial: Int = 0) {
         pendingPrototypeCallbacks.clear()
     }
 
-    private inner class Upstream : ChainedUpstream() {
-        override fun process(id: IdChain, op: Operation) {
-            val update = (currentPrototype ?: return).log.issueLocalUpdate(id, UpdatePayload(op))
-            val serialized = serializer.serialize(update)
-            gateway.publishUpdate(serialized)
-        }
+    private fun processSerializedUpdate(id: IdChain, op: Operation) {
+        val update = (currentPrototype ?: return).log.issueLocalUpdate(id, UpdatePayload(op))
+        val serialized = serializer.serialize(update)
+        gateway.publishUpdate(serialized)
     }
 
     private inner class LogSyncUpstream : LogUpstream {

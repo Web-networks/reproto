@@ -16,7 +16,6 @@ private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
 class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : ObservableCrdt<Change>() {
     private val elements: MutableMap<Identifier, String> = mutableMapOf(LeftId to "", RightId to "")
 
-    // FIXME: value of the clock must be persistent
     @Transient
     private val clock = PlainClock()
 
@@ -91,8 +90,9 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
     }
 
     private fun allocateIdentifier(left: Identifier, right: Identifier): Identifier {
+        val upstream = myUpstream ?: throw IllegalStateException("Upstream is required to generate identifier")
         val position = strategy.allocatePosition(left.position, right.position, siteId.id)
-        return Identifier(position, clock.next())
+        return Identifier(position, upstream.nextLocalIndex())
     }
 
     override fun deliver(op: Operation) {

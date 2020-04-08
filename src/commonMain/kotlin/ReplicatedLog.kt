@@ -33,6 +33,10 @@ internal class ReplicatedLog(@Suppress("CanBeParameter") private val context: No
         return update
     }
 
+    fun nextLocalIndex(): Int {
+        return clock.next()[site]
+    }
+
     /**
      * We make strong assumptions about the network channel to provide causal delivery.
      * Namely, it must not reorder messages.
@@ -42,7 +46,6 @@ internal class ReplicatedLog(@Suppress("CanBeParameter") private val context: No
      * To avoid it, this implementation does not actually check for reorders.
      *
      * @return true if the message can be accepted
-     * @throws IllegalStateException if some messages were definitely lost. Don't rely on this check.
      */
     fun tryCommit(update: Update): Boolean {
         val (longIndex, origin) = update.index
@@ -51,9 +54,6 @@ internal class ReplicatedLog(@Suppress("CanBeParameter") private val context: No
 
         if (index <= currentIndex) {
             return false
-        }
-        if (index > currentIndex + 1) {
-            throw IllegalStateException("Messages were lost")
         }
 
         clock.update(VectorTimestamp(mapOf(origin to index)))
@@ -66,7 +66,7 @@ internal class ReplicatedLog(@Suppress("CanBeParameter") private val context: No
     }
 
     private fun issueLocalTimestamp(): LamportTimestamp {
-        val localIndex = clock.next()[site]
+        val localIndex = nextLocalIndex()
         return LamportTimestamp(localIndex.toLong(), site)
     }
 }
