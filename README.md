@@ -9,6 +9,18 @@ This library provides the prototype representation layer for Neuroide. It consis
 
 Server part of the library is utilized in [reproto-service](https://github.com/Web-networks/reproto-service). This document describes the API mostly from client perspective.
 
+### Build and link
+
+```sh
+./gradlew build
+```
+
+Npm packages will appear in the folder `build/js`. If you prefer plain JS files, you may copy them to specified directory with
+
+```sh
+./copy-scripts.sh path/to/destination
+```
+
 ### Entities
 
 #### Prototype
