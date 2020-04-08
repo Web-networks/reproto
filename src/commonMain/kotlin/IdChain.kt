@@ -14,4 +14,7 @@ internal class IdChain constructor(val chain: List<String>) {
 
     val hasNext
         get() = index < chain.size
+
+    operator fun plus(id: String) =
+        IdChain(chain + listOf(id))
 }

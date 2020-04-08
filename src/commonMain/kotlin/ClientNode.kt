@@ -1,14 +1,15 @@
 package raid.neuroide.reproto
 
+import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.VectorTimestamp
 import kotlin.js.JsName
 
-class ClientNode(site: String, idCounterInitial: Int = 0) {
-    private val context = DefaultContext(site, idCounterInitial)
+class ClientNode(site: String) {
+    private val siteId = LocalSiteId(site)
     private val upstream = ChainedUpstreamBud(::processSerializedUpdate)
     private val logUpstream = LogSyncUpstream()
-    private val serializer = SerializationManager(context)
+    private val serializer = SerializationManager(siteId)
 
     private lateinit var gateway: ClientGateway
 

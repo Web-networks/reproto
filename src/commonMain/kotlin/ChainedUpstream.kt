@@ -17,7 +17,7 @@ internal class ChainedUpstreamBud(
         ChainedUpstream(processor, id, indexIssuer)
 
     fun child(additionalId: String): ChainedUpstreamBud =
-        ChainedUpstreamBud(processor, IdChain(listOf(additionalId) + id.chain))
+        ChainedUpstreamBud(processor, id + additionalId)
 }
 
 internal class ChainedUpstream(
@@ -33,5 +33,5 @@ internal class ChainedUpstream(
     override fun nextLocalIndex(): Long = indexIssuer()
 
     fun child(additionalId: String): ChainedUpstream =
-        ChainedUpstream(processor, IdChain(listOf(additionalId) + id.chain), indexIssuer)
+        ChainedUpstream(processor, id + additionalId, indexIssuer)
 }

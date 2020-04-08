@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 
 
 class TestBuilder {
-    private val fakeCtx = DefaultContext("...")
+    private val fakeCtx = TestIdHelper("...")
 
     val service = ServiceNode("", 10)
     val bridge = Bridge(service)

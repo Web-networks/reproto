@@ -1,5 +1,6 @@
 package raid.neuroide.reproto
 
+import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.VectorTimestamp
 
 class ServiceNode(
@@ -7,8 +8,9 @@ class ServiceNode(
     inMemoryThreshold: Int,
     idCounter: PersistentValue<Long> = InMemoryValue()
 ) {
-    private val context = ServiceContext(site, idCounter)
-    private val serializer = SerializationManager(context)
+    private val siteId = LocalSiteId(site)
+    private val idIssuer = PersistentIdIssuer(site, idCounter)
+    private val serializer = SerializationManager(siteId)
 
     private val cGateways: MutableList<ChangesGateway> = mutableListOf()
     private val psGateways: MutableList<PrototypeStorageGateway> = mutableListOf()
@@ -33,8 +35,8 @@ class ServiceNode(
     }
 
     fun createPrototype(): String {
-        val proto = Prototype(context.wrapped())
-        val id = context.issueId()
+        val proto = Prototype(siteId)
+        val id = idIssuer.issueId()
         val serialized = serializer.serialize(proto)
         psGateways.forEach { g ->
             g.store(id, serialized)

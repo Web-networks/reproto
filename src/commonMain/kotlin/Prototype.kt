@@ -2,15 +2,16 @@ package raid.neuroide.reproto
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.seq.Change
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
 import raid.neuroide.reproto.crdt.seq.Sequence
 import kotlin.js.JsName
 
 @Serializable
-class Prototype internal constructor(private val context: NodeContextWrapper) {
+class Prototype internal constructor(private val siteId: LocalSiteId) {
     private val layersMap: MutableMap<String, Layer> = mutableMapOf()
-    internal val log = ReplicatedLog(context)
+    internal val log = ReplicatedLog(siteId)
 
     @Transient
     private var listeners: PrototypeListener? = null
@@ -20,7 +21,7 @@ class Prototype internal constructor(private val context: NodeContextWrapper) {
 
     // this safe call is necessary to overcome a bug in kotlinx.serialization
     @Suppress("UNNECESSARY_SAFE_CALL")
-    private val layerSequence = Sequence(this?.context?.siteId, LogootStrategy)
+    private val layerSequence = Sequence(this?.siteId, LogootStrategy)
 
     @JsName("layers")
     val layers: Array<Layer>
@@ -31,7 +32,7 @@ class Prototype internal constructor(private val context: NodeContextWrapper) {
     @JsName("addLayer")
     fun addLayer(position: Int): Layer {
         val localIndex = log.nextLocalIndex()
-        val layerId = "${context.siteId.id}::${localIndex}"
+        val layerId = "${siteId.id}::${localIndex}"
         layerSequence.insert(position, layerId)
         return getOrCreateLayer(layerId)
     }
@@ -93,7 +94,7 @@ class Prototype internal constructor(private val context: NodeContextWrapper) {
     }
 
     private fun createLayer(id: String): Layer {
-        val layer = Layer(context)
+        val layer = Layer(siteId)
         listeners?.let { layer.setListeners(it) }
         myUpstream?.let { layer.setUpstream(it.child(id)) }
         return layer

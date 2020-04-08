@@ -3,12 +3,13 @@ package raid.neuroide.reproto
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.LWWRegister
+import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.Operation
 import raid.neuroide.reproto.crdt.RegisterWrapper
 import kotlin.js.JsName
 
 @Serializable
-class Layer internal constructor(private val context: NodeContextWrapper) {
+class Layer internal constructor(private val siteId: LocalSiteId) {
     private val parameters: MutableMap<String, LWWRegister> = mutableMapOf()
 
     @Transient
@@ -52,7 +53,7 @@ class Layer internal constructor(private val context: NodeContextWrapper) {
     }
 
     private fun createRegister(paramName: String): LWWRegister {
-        val rg = LWWRegister("", context.siteId)
+        val rg = LWWRegister("", siteId)
         if (listeners != null)
             rg.setListener { parameterChanged(paramName) }
         myUpstream?.let { rg.setUpstream(it.child(paramName)) }

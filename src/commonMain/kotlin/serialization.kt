@@ -2,21 +2,16 @@ package raid.neuroide.reproto
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.plus
-import raid.neuroide.reproto.common.ContextualInjectorSerializer
+import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.VectorTimestamp
 import raid.neuroide.reproto.crdt.getCrdtSerializers
 
 
-private fun getSerialModuleForContext(context: NodeContext) =
-    getCrdtSerializers(context.siteId) +
-            SerializersModule {
-                contextual(NodeContextWrapper::class, ContextualInjectorSerializer(context.wrapped()))
-            }
+private fun getSerialModuleForContext(siteId: LocalSiteId) =
+    getCrdtSerializers(siteId)
 
-internal class SerializationManager(context: NodeContext) {
-    private val module = getSerialModuleForContext(context)
+internal class SerializationManager(siteId: LocalSiteId) {
+    private val module = getSerialModuleForContext(siteId)
 
     fun serialize(prototype: Prototype): String {
         return getJson().stringify(Prototype.serializer(), prototype)

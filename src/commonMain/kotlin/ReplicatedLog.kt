@@ -9,13 +9,13 @@ import raid.neuroide.reproto.crdt.VectorTimestamp
 
 
 @Serializable
-internal class ReplicatedLog(@Suppress("CanBeParameter") private val context: NodeContextWrapper) {
+internal class ReplicatedLog(private val siteId: LocalSiteId) {
     @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS") // to bypass the bug in kotlinx.serialization
-    private val clock = VectorClock(this?.context?.siteId ?: LocalSiteId(""))
+    private val clock = VectorClock(this?.siteId ?: LocalSiteId(""))
 
     @Suppress("UNNECESSARY_SAFE_CALL") // to bypass the bug in kotlinx.serialization
     @Transient
-    private val site = this?.context?.siteId?.id
+    private val site = this?.siteId?.id
 
     @Transient
     private var myUpstream: LogUpstream? = null
