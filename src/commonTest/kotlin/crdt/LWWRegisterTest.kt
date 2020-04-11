@@ -62,4 +62,31 @@ class LWWRegisterTest {
         alChecker.assertOnce()
         blChecker.assertOnce()
     }
+
+    @Test
+    fun wrapper() = crdtTest {
+        val iValue = 12
+        val fValue = -12.3782
+        val bValue = true
+        val lValue = -(Long.MAX_VALUE / 2)
+
+        val a = RegisterWrapper(lwwRegister())
+
+        assertEquals(0, a.intValue)
+        assertEquals(.0, a.doubleValue)
+        assertEquals(0, a.longValue)
+        assertEquals(false, a.booleanValue)
+
+        a.intValue = iValue
+        assertEquals(iValue, a.intValue)
+
+        a.longValue = lValue
+        assertEquals(lValue, a.longValue)
+
+        a.doubleValue = fValue
+        assertEquals(fValue, a.doubleValue)
+
+        a.booleanValue = bValue
+        assertEquals(bValue, a.booleanValue)
+    }
 }
