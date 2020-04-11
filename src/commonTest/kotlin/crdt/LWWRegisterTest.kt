@@ -45,4 +45,21 @@ class LWWRegisterTest {
         assertEquals(v3, a.value)
         assertEquals(v3, b.value)
     }
+
+    @Test
+    fun listener() = crdtTest {
+        val a = lwwRegister()
+        val b = lwwRegister()
+
+        val alChecker = a.listen()
+        val blChecker = b.listen()
+
+        alChecker.assertNotCalled()
+        blChecker.assertNotCalled()
+
+        a.value = "Test"
+
+        alChecker.assertOnce()
+        blChecker.assertOnce()
+    }
 }

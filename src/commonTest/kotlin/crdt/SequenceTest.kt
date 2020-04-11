@@ -1,7 +1,10 @@
 package raid.neuroide.reproto.crdt
 
+import raid.neuroide.reproto.crdt.seq.Change
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class SequenceTest {
     @Test
@@ -90,5 +93,68 @@ class SequenceTest {
         b.move(1, 0)
 
         assertEquals("ba", a.string)
+    }
+
+    @Test
+    fun listeners() = crdtTest {
+        val a = logoot()
+        val b = logoot()
+
+        val al = a.listen()
+        val bl = b.listen()
+        val ls = arrayOf(al, bl)
+
+        a.insert(0, "x")
+        for (l in ls)
+            l.assertChange {
+                assertTrue(it is Change.Insert)
+                assertEquals(0, it.position)
+                assertEquals("x", it.value)
+            }.assertOnce()
+
+        a.insert(1, "y")
+        for (l in ls)
+            l.reset()
+
+        a.move(0, 2)
+        for (l in ls)
+            l.assertChange {
+                assertTrue(it is Change.Move)
+                assertEquals(0, it.from)
+                assertEquals(1, it.to)
+                assertEquals("x", it.value)
+            }.assertOnce().reset()
+
+        b.delete(0)
+        for (l in ls)
+            l.assertChange {
+                assertTrue(it is Change.Delete)
+                assertEquals(0, it.position)
+                assertEquals("y", it.value)
+            }.assertOnce().reset()
+    }
+
+    @Test
+    fun exceptions() = crdtTest {
+        val a = logoot()
+
+        assertFailsWith(IndexOutOfBoundsException::class) {
+            a.insert(1, "x")
+        }
+        assertFailsWith(IndexOutOfBoundsException::class) {
+            a.insert(-1, "x")
+        }
+
+        a.insert(0, "x")
+
+        assertFailsWith(IndexOutOfBoundsException::class) {
+            a.delete(1)
+        }
+        assertFailsWith(IndexOutOfBoundsException::class) {
+            a.move(0, 2)
+        }
+        assertFailsWith(IndexOutOfBoundsException::class) {
+            a.move(1, 0)
+        }
     }
 }

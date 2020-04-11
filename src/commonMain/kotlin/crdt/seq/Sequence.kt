@@ -88,14 +88,14 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
                 val element = Element(pid, content)
                 val isAdded = elements.add(element)
                 if (isAdded) {
-                    fire(Change.Insert(elements.indexOf(element), content))
+                    fire(Change.Insert(elements.indexOf(element) - 1, content))
                 }
             }
             is SequenceOperationDelete -> {
                 val index = elements.indexOf(Element(operation.pid))
                 if (index >= 0) {
                     val content = elements.removeAt(index).value
-                    fire(Change.Delete(index, content))
+                    fire(Change.Delete(index - 1, content))
                 }
             }
             is SequenceOperationMove -> {
@@ -107,7 +107,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
                     elements.removeAt(fromIndex)
                     val toIndex = elements.addIndexed(newElement)
 
-                    fire(Change.Move(fromIndex, toIndex, content))
+                    fire(Change.Move(fromIndex - 1, toIndex - 1, content))
                 }
             }
             else -> return

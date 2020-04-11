@@ -2,6 +2,45 @@ package raid.neuroide.reproto.crdt
 
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
 import raid.neuroide.reproto.crdt.seq.Sequence
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+
+class CrdtListenerChecker<T> {
+    private var value: T? = null
+    private var called: Int = 0
+
+    fun listener(v: T) {
+        value = v
+        called++
+    }
+
+    fun assertChange(checker: (T) -> Unit): CrdtListenerChecker<T> {
+        assertTrue(called > 0)
+        assertNotNull(value as Any?)
+        checker(value!!)
+        return this
+    }
+
+    fun assertCalled(): CrdtListenerChecker<T> {
+        assertTrue(called > 0)
+        return this
+    }
+
+    fun assertNotCalled(): CrdtListenerChecker<T> {
+        assertEquals(0, called)
+        return this
+    }
+
+    fun assertOnce(): CrdtListenerChecker<T> {
+        assertEquals(1, called)
+        return this
+    }
+
+    fun reset() {
+        called = 0
+    }
+}
 
 class CrdtTestBuilder(private val upstream: InternalBroadcast) {
     private var siteId = 0
@@ -26,6 +65,10 @@ class CrdtTestBuilder(private val upstream: InternalBroadcast) {
 
     val Sequence.string
         get() = content.joinToString("")
+
+    fun <T> ObservableCrdt<T>.listen(): CrdtListenerChecker<T> {
+        return CrdtListenerChecker<T>().also { setListener(it::listener) }
+    }
 }
 
 inline fun crdtTest(func: CrdtTestBuilder.() -> Unit) {
