@@ -59,11 +59,10 @@ It is a wrapper over last-write-wins register. It provides automatic conversion 
 | -------------- | ----------- | ------------- |
 | `value`        | `String`    | `""`          |
 | `intValue`     | `int`       | `0`           |
+| `doubleValue`  | `double`    | `0.0`         |
 | `booleanValue` | `boolean`   | `false`       |
 
-`float` is going to be supported too.
-
-Each propery is read read/write accessible. Assignment will immediately apply changes to the local copy, trigger listeners, produce update and publish it through Gateway (see below).
+Each property is read read/write accessible. Assignment will immediately apply changes to the local copy, trigger listeners, produce update and publish it through Gateway (see below).
 
 Note that the value stored in the register is actually string. Read/write to `intValue` or `booleanValue` just causes the value to be parse/stringified. So if the value cannot be parsed to the corresponding type, an exception will be thrown.
 

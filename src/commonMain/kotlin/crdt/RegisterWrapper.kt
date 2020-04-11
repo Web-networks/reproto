@@ -1,7 +1,6 @@
 package raid.neuroide.reproto.crdt
 
 import kotlin.reflect.KMutableProperty0
-import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
 
 
@@ -37,7 +36,12 @@ private class BooleanAlias(sourceProperty: KMutableProperty0<String>) : TypedAli
     override fun deserialize(v: String) = if (v.isEmpty()) false else v.toInt() != 0
 }
 
-// TODO float and double aliases
+private class DoubleAlias(sourceProperty: KMutableProperty0<String>) : TypedAlias<String, Double>(sourceProperty) {
+    override fun serialize(v: Double) = v.toRawBits().toString()
+    override fun deserialize(v: String) = if (v.isEmpty()) .0 else Double.fromBits(v.toLong())
+}
+
+
 class RegisterWrapper(private val register: LWWRegister) {
     var value: String
         get() = register.value
@@ -47,5 +51,6 @@ class RegisterWrapper(private val register: LWWRegister) {
 
     var intValue by IntAlias(::value)
     var longValue by LongAlias(::value)
+    var doubleValue by DoubleAlias(::value)
     var booleanValue by BooleanAlias(::value)
 }
