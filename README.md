@@ -37,6 +37,8 @@ Prototype represents a replica of the model. It has the following properties and
 
 Modification methods (`addLayer`, `removeLayer`, `moveLayer`) are immediately applied to the local copy, trigger listeners, produce update and publish it through Gateway (see below).
 
+**Warning**: currently `moveLayer` opperation is implemented incorrectly and may break convergence. It is going to be fixed.
+
 #### Layer
 
 Represents one layer of the model. It has only one method.
