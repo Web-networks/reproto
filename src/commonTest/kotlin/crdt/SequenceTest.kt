@@ -79,47 +79,6 @@ class SequenceTest {
     }
 
     @Test
-    fun basicMove() = crdtTest {
-        val a = logoot()
-        val b = logoot()
-
-        a.insert(0, "a")
-        a.insert(0, "b")
-
-        b.move(0, 2)
-
-        assertEquals("ab", a.string)
-
-        b.move(1, 0)
-
-        assertEquals("ba", a.string)
-    }
-
-    @Test
-    fun concurrentMove() = crdtTest {
-        val a = logoot()
-        val b = logoot()
-
-        a.insert(0, "a")
-        a.insert(1, "b")
-        a.insert(2, "c")
-
-        disconnect()
-
-        a.move(1, 0)
-        b.move(1, 3)
-
-        connect()
-
-        assertEquals(a.size, b.size)
-
-        // replicas diverged:
-        // move is actually broken!
-        println(a.string)
-        println(b.string)
-    }
-
-    @Test
     fun listeners() = crdtTest {
         val a = logoot()
         val b = logoot()
@@ -140,21 +99,12 @@ class SequenceTest {
         for (l in ls)
             l.reset()
 
-        a.move(0, 2)
-        for (l in ls)
-            l.assertChange {
-                assertTrue(it is Change.Move)
-                assertEquals(0, it.from)
-                assertEquals(1, it.to)
-                assertEquals("x", it.value)
-            }.assertOnce().reset()
-
         b.delete(0)
         for (l in ls)
             l.assertChange {
                 assertTrue(it is Change.Delete)
                 assertEquals(0, it.position)
-                assertEquals("y", it.value)
+                assertEquals("x", it.value)
             }.assertOnce().reset()
     }
 
@@ -173,12 +123,6 @@ class SequenceTest {
 
         assertFailsWith(IndexOutOfBoundsException::class) {
             a.delete(1)
-        }
-        assertFailsWith(IndexOutOfBoundsException::class) {
-            a.move(0, 2)
-        }
-        assertFailsWith(IndexOutOfBoundsException::class) {
-            a.move(1, 0)
         }
     }
 }

@@ -36,7 +36,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
         val rId = elements[index + 1].pid
 
         val newId = allocateIdentifier(lId, rId)
-        val op = SequenceOperationInsert(newId, content)
+        val op = SequenceOperation.Insert(newId, content)
         commitLocallyGenerated(op)
     }
 
@@ -44,20 +44,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
         checkLimits(index)
         val id = elements[index + 1].pid
 
-        val op = SequenceOperationDelete(id)
-        commitLocallyGenerated(op)
-    }
-
-    fun move(from: Int, to: Int) {
-        checkLimits(from)
-        checkLimits(to, true)
-
-        val fromId = elements[from + 1].pid
-        val toLId = elements[to].pid
-        val toRId = elements[to + 1].pid
-
-        val newId = allocateIdentifier(toLId, toRId)
-        val op = SequenceOperationMove(fromId, newId)
+        val op = SequenceOperation.Delete(id)
         commitLocallyGenerated(op)
     }
 
@@ -80,7 +67,7 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
 
     override fun deliver(op: Operation) {
         when (val operation = op as SequenceOperation) {
-            is SequenceOperationInsert -> {
+            is SequenceOperation.Insert -> {
                 val (pid, content) = operation
                 val element = Element(pid, content)
                 val isAdded = elements.add(element)
@@ -88,26 +75,13 @@ class Sequence(private val siteId: LocalSiteId, private val strategy: Allocation
                     fire(Change.Insert(elements.indexOf(element) - 1, content))
                 }
             }
-            is SequenceOperationDelete -> {
+            is SequenceOperation.Delete -> {
                 val index = elements.indexOf(Element(operation.pid))
                 if (index >= 0) {
                     val content = elements.removeAt(index).value
                     fire(Change.Delete(index - 1, content))
                 }
             }
-            is SequenceOperationMove -> {
-                val fromIndex = elements.indexOf(Element(operation.pidFrom))
-                if (fromIndex >= 0) {
-                    val content = elements[fromIndex].value
-                    val newElement = Element(operation.pidTo, content)
-
-                    elements.removeAt(fromIndex)
-                    val toIndex = elements.addIndexed(newElement)
-
-                    fire(Change.Move(fromIndex - 1, toIndex - 1, content))
-                }
-            }
-            else -> return
         }
     }
 
