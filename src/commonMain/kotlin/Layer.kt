@@ -65,7 +65,6 @@ class Layer internal constructor(private val siteId: LocalSiteId) {
     }
 
     private fun applyUpdate(update: UpdatePayload) {
-        // TODO: maybe don't throw?
         throw UnsupportedOperationException()
     }
 }

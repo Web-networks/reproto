@@ -5,7 +5,7 @@ import kotlinx.serialization.Transient
 import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.seq.Change
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
-import raid.neuroide.reproto.crdt.seq.Sequence
+import raid.neuroide.reproto.crdt.seq.UniqueSequence
 import kotlin.js.JsName
 
 @Serializable
@@ -21,19 +21,17 @@ class Prototype internal constructor(private val siteId: LocalSiteId) {
 
     // this safe call is necessary to overcome a bug in kotlinx.serialization
     @Suppress("UNNECESSARY_SAFE_CALL")
-    private val layerSequence = Sequence(this?.siteId, LogootStrategy)
+    private val layerSequence = UniqueSequence(this?.siteId, LogootStrategy)
 
     @JsName("layers")
     val layers: Array<Layer>
-        get() = layerSequence.content.map { id ->
+        get() = layerSequence.elements.map { id ->
             getOrCreateLayer(id)
         }.toTypedArray()
 
     @JsName("addLayer")
     fun addLayer(position: Int): Layer {
-        val localIndex = log.nextLocalIndex()
-        val layerId = "${siteId.id}::${localIndex}"
-        layerSequence.insert(position, layerId)
+        val layerId = layerSequence.add(position)
         return getOrCreateLayer(layerId)
     }
 

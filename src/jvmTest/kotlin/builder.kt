@@ -19,6 +19,6 @@ class TestBuilder {
         }
 }
 
-inline fun integrationTest(crossinline test: suspend TestBuilder.() -> Unit) = runBlocking {
+fun integrationTest(test: suspend TestBuilder.() -> Unit) = runBlocking {
     TestBuilder().test()
 }
