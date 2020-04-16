@@ -7,9 +7,6 @@ import raid.neuroide.reproto.crdt.LocalSiteId
 import raid.neuroide.reproto.crdt.ObservableCrdt
 import raid.neuroide.reproto.crdt.Operation
 
-private val LeftId = Identifier(emptyList(), -1)
-private val RightId = Identifier(listOf(Doublet(Int.MAX_VALUE, "")), -1)
-
 
 @Serializable
 class Sequence(private val siteId: LocalSiteId, private val strategy: AllocationStrategy) : ObservableCrdt<Change>() {

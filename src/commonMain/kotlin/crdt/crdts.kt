@@ -9,9 +9,8 @@ import raid.neuroide.reproto.common.ContextualInjectorSerializer
 import raid.neuroide.reproto.crdt.LWWRegister.LWWRegisterSet
 import raid.neuroide.reproto.crdt.seq.AllocationStrategy
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
-import raid.neuroide.reproto.crdt.seq.SequenceOperationDelete
-import raid.neuroide.reproto.crdt.seq.SequenceOperationInsert
-import raid.neuroide.reproto.crdt.seq.SequenceOperationMove
+import raid.neuroide.reproto.crdt.seq.SequenceOperation
+import raid.neuroide.reproto.crdt.seq.USeqOperation
 
 
 interface Operation
@@ -42,9 +41,12 @@ fun getCrdtSerializers(siteId: LocalSiteId): SerialModule {
 
         polymorphic(Operation::class) {
             LWWRegisterSet::class with LWWRegisterSet.serializer()
-            SequenceOperationInsert::class with SequenceOperationInsert.serializer()
-            SequenceOperationDelete::class with SequenceOperationDelete.serializer()
-            SequenceOperationMove::class with SequenceOperationMove.serializer()
+
+            SequenceOperation.Insert::class with SequenceOperation.Insert.serializer()
+            SequenceOperation.Delete::class with SequenceOperation.Delete.serializer()
+
+            USeqOperation.Emplace::class with USeqOperation.Emplace.serializer()
+            USeqOperation.Delete::class with USeqOperation.Delete.serializer()
         }
 
         polymorphic(AllocationStrategy::class) {

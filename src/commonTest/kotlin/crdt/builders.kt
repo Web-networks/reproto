@@ -2,6 +2,7 @@ package raid.neuroide.reproto.crdt
 
 import raid.neuroide.reproto.crdt.seq.LogootStrategy
 import raid.neuroide.reproto.crdt.seq.Sequence
+import raid.neuroide.reproto.crdt.seq.UniqueSequence
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -55,6 +56,11 @@ class CrdtTestBuilder(private val upstream: InternalBroadcast) {
             upstream.addCrdt(this)
         }
 
+    fun useq() = UniqueSequence(LocalSiteId(siteId++.toString()), LogootStrategy)
+        .apply {
+            upstream.addCrdt(this)
+        }
+
     fun disconnect() {
         upstream.connected = false
     }
@@ -65,6 +71,8 @@ class CrdtTestBuilder(private val upstream: InternalBroadcast) {
 
     val Sequence.string
         get() = content.joinToString("")
+    val UniqueSequence.string
+        get() = elements.joinToString("")
 
     fun <T> ObservableCrdt<T>.listen(): CrdtListenerChecker<T> {
         return CrdtListenerChecker<T>().also { setListener(it::listener) }

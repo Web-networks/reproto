@@ -49,6 +49,13 @@ class IndexedSet<K : Comparable<K>>() : List<K> {
         return elements.removeAt(index)
     }
 
+    fun removeIndexed(element: K): Int {
+        val index = indexOf(element)
+        if (index >= 0)
+            removeAt(index)
+        return index
+    }
+
     override fun indexOf(element: K): Int {
         return max(elements.binarySearch(element), -1)
     }
