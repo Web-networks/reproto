@@ -65,13 +65,6 @@ class UniqueSequence(private val siteId: LocalSiteId, private val strategy: Allo
         deleteUnchecked(element)
     }
 
-    fun delete(element: String): Boolean {
-        if (element !in contents)
-            return false
-        deleteUnchecked(element)
-        return true
-    }
-
     private fun deleteUnchecked(element: String) {
         val op = USeqOperation.Delete(element)
         commitLocallyGenerated(op)
@@ -83,14 +76,6 @@ class UniqueSequence(private val siteId: LocalSiteId, private val strategy: Allo
 
         val triplet = order[from + 1]
         moveUnchecked(triplet, to)
-    }
-
-    fun move(element: String, to: Int): Boolean {
-        checkLimits(to, true)
-        val triplet = contents[element] ?: return false
-
-        moveUnchecked(triplet, to)
-        return true
     }
 
     private fun moveUnchecked(triplet: Triplet, to: Int) {
